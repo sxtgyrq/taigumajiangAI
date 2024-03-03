@@ -73,12 +73,51 @@ var objMain =
     fpIndex: -1,
     othersBasePoint: {},
     playerGroup: null,
-    carGroup: null,
     collectGroup: null,
     getOutGroup: null,
     robotModel: null,
-    buildingModel: {},
-    buildingGroup: null,
+    mahjongsModel:
+    {
+        dice: null,
+        m0: null,//未知牌
+        m1: null,//
+        m2: null,
+        m3: null,
+        m4: null,
+        m5: null,
+        m6: null,
+        m7: null,
+        m8: null,
+        m9: null,
+        m11: null,
+        m12: null,
+        m13: null,
+        m14: null,
+        m15: null,
+        m16: null,
+        m17: null,
+        m18: null,
+        m19: null,
+        m21: null,
+        m22: null,
+        m23: null,
+        m24: null,
+        m25: null,
+        m26: null,
+        m27: null,
+        m28: null,
+        m29: null,
+        m40: null,
+        m47: null,
+        m54: null,
+        m61: null,
+        m68: null,
+        m75: null,
+        m82: null,
+    },
+    mahjongsGroup: null,
+    diceGroup: null,
+    mahjongsOnHandGroup: null,
     fightSituationGroup: null,
     cars: {},
     rmbModel: {},
@@ -120,6 +159,9 @@ var objMain =
     leaveGameModel: null,
     profileModel: null,
     light1: null,
+    light2: null,
+    light3: null,
+    light4: null,
     controls: null,
     raycaster: null,
     mouse: null,
@@ -152,23 +194,6 @@ var objMain =
     columnGroup: null,
     mainF:
     {
-        drawLineOfFpToRoad: function (fp, group, color, lineName) {
-            {
-                var objName = 'approach_' + lineName;
-                if (group == null || group == undefined) { }
-                else if (group.getObjectByName(objName) == null || group.getObjectByName(objName) == undefined) {
-                    var start = new THREE.Vector3(MercatorGetXbyLongitude(fp.Longitude), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.Latitde));
-                    var end = new THREE.Vector3(MercatorGetXbyLongitude(fp.positionLongitudeOnRoad), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.positionLatitudeOnRoad));
-                    var lineGeometry = new THREE.Geometry();
-                    lineGeometry.vertices.push(start);
-                    lineGeometry.vertices.push(end);
-                    var lineMaterial = new THREE.LineBasicMaterial({ color: color });
-                    var line = new THREE.Line(lineGeometry, lineMaterial);
-                    line.name = objName;
-                    group.add(line);
-                }
-            }
-        },
         lookAtPosition: function (fp) {
 
             var start = new THREE.Vector3(MercatorGetXbyLongitude(fp.Longitude), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.Latitde));
@@ -204,64 +229,6 @@ var objMain =
 
                 objMain.controls.target.set(start.x, 0, start.z);
                 objMain.camera.lookAt(start.x, 0, start.z);
-            }
-        },
-        initilizeCars: function (fp, color, key, isSelf, postionInStation) {
-            var carName = 'car' + '_' + key;
-            if (objMain.carGroup == null || objMain.carGroup == undefined) { }
-            else if (objMain.carGroup.getObjectByName(carName) == null || objMain.carGroup.getObjectByName(carName) == undefined) {
-                if (isSelf == undefined) {
-                    isSelf = true;
-                }
-                var start = new THREE.Vector3(MercatorGetXbyLongitude(fp.Longitude), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.Latitde))
-                var end = new THREE.Vector3(MercatorGetXbyLongitude(fp.positionLongitudeOnRoad), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.positionLatitudeOnRoad))
-                var cc = new Complex(end.x - start.x, end.z - start.z);
-                cc.toOne();
-
-                var positon1 = cc.multiply(new Complex(-0.309016994, 0.951056516));
-                var positon2 = positon1.multiply(new Complex(0.809016994, 0.587785252));
-                var positon3 = positon2.multiply(new Complex(0.809016994, 0.587785252));
-                var positon4 = positon3.multiply(new Complex(0.809016994, 0.587785252));
-                var positon5 = positon4.multiply(new Complex(0.809016994, 0.587785252));
-
-                var positons = [positon1, positon2, positon3, positon4, positon5];
-
-                var names = ['carA', 'carB', 'carC', 'carD', 'carE'];
-                var percentOfPosition = 0.25;
-                {
-                    var i = postionInStation;
-                    var start = new THREE.Vector3(MercatorGetXbyLongitude(fp.Longitude), MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, -MercatorGetYbyLatitude(fp.Latitde));
-                    var end = new THREE.Vector3(start.x + positons[i].r * percentOfPosition, MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify, start.z + positons[i].i * percentOfPosition);
-                    var lineGeometry = new THREE.Geometry();
-                    lineGeometry.vertices.push(start);
-                    lineGeometry.vertices.push(end);
-                    var lineMaterial = new THREE.LineBasicMaterial({ color: color });
-                    var line = new THREE.Line(lineGeometry, lineMaterial);
-                    line.name = 'carRoad' + '_' + key;
-                    if (key === objMain.indexKey) {
-                        isSelf = true;
-                    }
-
-                    line.userData = { objectType: 'carRoad', parent: key, };
-                    objMain.carGroup.add(line);
-                    var model = null;
-                    if (isSelf) {
-                        model = objMain.cars[names[i]].clone();
-                    }
-                    else {
-                        model = objMain.cars['carO'].clone();
-                    }
-                    model.name = carName;
-                    model.position.set(end.x, end.y, end.z);
-                    model.scale.set(0.002, 0.002, 0.002);
-                    model.rotateY(-positons[i].toAngle());
-                    model.userData = { objectType: 'car', parent: key, };
-                    objMain.carGroup.add(model);
-
-                    if (isSelf) {
-                        stateSet.nitrogeneffect.add();
-                    }
-                }
             }
         },
         lookTwoPositionCenter: function (p1, p2) {
@@ -907,13 +874,12 @@ var objMain =
                                 }
                             };
                             bgm.load();
-                            bgm.onended = function ()
-                            {
+                            bgm.onended = function () {
                                 setTimeout(() => {
                                     var anotherBGM = document.getElementById('backGroudMusick');
                                     anotherBGM.volume = 1;
-                                }, 1000); 
-                               // bgm.volume = 0.07;
+                                }, 1000);
+                                // bgm.volume = 0.07;
                             }
                         }
                     }
@@ -1097,12 +1063,6 @@ var objMain =
                         case 'OnLine':
                             {
                                 switch (objMain.state) {
-                                    case 'LookForBuildings': {
-                                        objMain.state = objMain.receivedState;
-                                        setTransactionHtml.cancle();
-                                        setTransactionHtml.change();
-                                        //  operatePanel.refresh();
-                                    }; break;
                                     default: {
                                         set3DHtml();
                                         //  objMain.state = objMain.receivedState;
@@ -1255,7 +1215,66 @@ var objMain =
                     if (objMain.state == "OnLine") {
                         var msg = '先执行了 OnLine命令';
                         console.log('提示', msg);
-                        objMain.GetPositionNotify.F(evt.data);
+                        console.log('提示', received_obj);
+                        //objMain.GetPositionNotify.F(evt.data);
+                        switch (received_obj.MahjongState) {
+                            case 'NeedToSelectDirction':
+                                {
+                                    selectPosition.refresh();
+                                }; break;
+                            case 'NeedToGetStartPosition':
+                                {
+                                    //NeedToGetStartPosition
+                                    //  mahjongDisplay.ShowStart();
+                                    mahjongDisplay.sortedShow();
+                                    switch (received_obj.Position) {
+                                        case 'East': {
+                                            // objMain.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 30);
+                                            objMain.camera.position.set(0.6 + 0.3, 1.1, 0);
+
+                                            objMain.controls.minPolarAngle = Math.PI / 600;
+                                            objMain.controls.maxPolarAngle = Math.PI / 2 - Math.PI / 36;
+                                            objMain.controls.minDistance = 1;
+                                            objMain.controls.maxDistance = 1;
+                                            objMain.controls.enableZoom = false;
+                                            selectPosition.refresh2();
+                                        }; break;
+                                    }
+                                }; break;
+                            case 'NeedToWait':
+                                {
+                                    if (received_obj.diceRotating) {
+                                        objMain.diceRotating = true;
+                                    }
+                                    else {
+                                        objMain.diceRotating = false;
+                                        diceDisplay.showValue(received_obj.dicePoint[0], received_obj.dicePoint[1], received_obj.dicePoint[2], received_obj.dicePoint[3]);
+                                    }
+                                }; break;
+                            case 'NeedToPlayAHand':
+                                {
+                                    if (received_obj.CurrentPositon > received_obj.StartPosition) {
+                                        for (var i = 0; i < 136; i++) {
+                                            var mahjongName = 'mahjong' + i;
+                                            if (i >= received_obj.StartPosition && i < received_obj.CurrentPositon) {
+                                                objMain.mahjongsGroup.getObjectByName(mahjongName).visible = false;
+                                            }
+                                            else objMain.mahjongsGroup.getObjectByName(mahjongName).visible = true;
+                                        }
+                                    }
+                                    else {
+                                        for (var i = 0; i < 136; i++) {
+                                            var mahjongName = 'mahjong' + i;
+                                            if (i < received_obj.CurrentPositon) objMain.mahjongsGroup.getObjectByName(mahjongName).visible = false;
+                                            else if (i >= received_obj.StartPosition) objMain.mahjongsGroup.getObjectByName(mahjongName).visible = false;
+                                            else { objMain.mahjongsGroup.getObjectByName(mahjongName).visible = true; }
+                                        }
+
+                                    }
+                                    mahjongDisplay.showMahjongsOnHand(received_obj.Mahjongs);
+                                    //received_obj.mahjongDisplay.showMahjongOnHand()
+                                }; break;
+                        }
                     }
                     else {
                         /*
@@ -1272,747 +1291,10 @@ var objMain =
                     //model.position.set(objMain.basePoint.MacatuoX, 0, -objMain.basePoint.MacatuoY);
                     //objMain.roadGroup.add(model);
                 }; break;
-            case 'MapRoadAndCrossJson':
-                {
-                    switch (received_obj.action) {
-                        case 'start':
-                            {
-                                Map.roadAndCrossJson = '';
-                                objMain.ws.send('MapRoadAndCrossJson,start');
-                            }; break;
-                        case 'mid':
-                            {
-                                Map.roadAndCrossJson += received_obj.passStr;
-                                objMain.ws.send('MapRoadAndCrossJson,mid');
-                            }; break;
-                        case 'end':
-                            {
-                                Map.roadAndCross = JSON.parse(Map.roadAndCrossJson);
-                                Map.roadAndCrossJson = '';
-                                objMain.ws.send('MapRoadAndCrossJson,end');
-                            }; break;
-                    }
-                }; break;
-            case 'SetRobot':
-                {
-                    //  console.log(evt.data);
-                    var f = function (received_obj, mIndex, field) {
-                        var manager = new THREE.LoadingManager();
-                        new THREE.MTLLoader(manager)
-                            .loadTextOnly(received_obj.modelBase64[1], 'data:image/png;base64,' + received_obj.modelBase64[mIndex], function (materials) {
-                                materials.preload();
-                                // materials.depthTest = false;
-                                new THREE.OBJLoader(manager)
-                                    .setMaterials(materials)
-                                    //.setPath('/Pic/')
-                                    .loadTextOnly(received_obj.modelBase64[0], function (object) {
-                                        console.log('o', object);
-                                        for (var iOfO = 0; iOfO < object.children.length; iOfO++) {
-                                            if (object.children[iOfO].isMesh) {
-                                                for (var mi = 0; mi < object.children[iOfO].material.length; mi++) {
-                                                    //object.children[iOfO].material[mi].depthTest = false;
-                                                    object.children[iOfO].material[mi].transparent = true;
-                                                    object.children[iOfO].material[mi].opacity = 1;
-                                                    object.children[iOfO].material[mi].side = THREE.FrontSide;
-                                                    // console.log('color', object.children[iOfO].material[mi].color);
-                                                    //switch (level) {
-                                                    //    case 'high':
-                                                    //        {
-                                                    //            //FR-2HZB-033
-                                                    //            object.children[iOfO].material[mi].color = new THREE.Color(1.5, 1, 1);
-                                                    //        }; break;
-                                                    //    case 'mid':
-                                                    //        {
-                                                    //            object.children[iOfO].material[mi].color = new THREE.Color(1, 1.5, 1);
-                                                    //        }; break;
-                                                    //    case 'low':
-                                                    //        {
-                                                    //            object.children[iOfO].material[mi].color = new THREE.Color(1, 1, 1.5);
-                                                    //        }; break;
-                                                    //}
-                                                    //object.children[iOfO].material[mi].color = new THREE.Color(1, 1, 1);
-                                                }
-                                            }
-                                        }
-                                        //  console.log('o', object);
-                                        objMain.cars[field] = object;
-                                        //var model = objMain.car1.clone();
-                                        //model.position.set(objMain.basePoint.MacatuoX, 0, -objMain.basePoint.MacatuoY);
-                                        //model.scale.set(0.002, 0.002, 0.002);
-                                        //objMain.roadGroup.add(model);
-
-                                    }, function () { }, function () { });
-                            });
-                    };
-                    f(received_obj, 2, 'carA');
-                    f(received_obj, 3, 'carB');
-                    f(received_obj, 4, 'carC');
-                    f(received_obj, 5, 'carD');
-                    f(received_obj, 6, 'carE');
-                    f(received_obj, 7, 'carO');
-                    f(received_obj, 8, 'carO2');
-                    objMain.ws.send('SetRobot');
-                }; break;
-            case 'SetRMB':
-                {
-                    var f = function (received_obj, field) {
-                        var manager = new THREE.LoadingManager();
-                        new THREE.MTLLoader(manager)
-                            .loadTextOnly(received_obj.modelBase64[0], 'data:image/jpeg;base64,' + received_obj.modelBase64[1], function (materials) {
-                                materials.preload();
-                                // materials.depthTest = false;
-                                new THREE.OBJLoader(manager)
-                                    .setMaterials(materials)
-                                    //.setPath('/Pic/')
-                                    .loadTextOnly(objMain.rmbModel.geometry, function (object) {
-                                        console.log('o', object);
-                                        for (var iOfO = 0; iOfO < object.children.length; iOfO++) {
-                                            if (object.children[iOfO].isMesh) {
-                                                for (var mi = 0; mi < object.children[iOfO].material.length; mi++) {
-                                                    object.children[iOfO].material[mi].transparent = true;
-                                                    object.children[iOfO].material[mi].opacity = 1;
-                                                    object.children[iOfO].material[mi].side = THREE.FrontSide;
-                                                    object.children[iOfO].material[mi].color = new THREE.Color(0.45, 0.45, 0.45);
-                                                }
-                                            }
-                                        }
-                                        object.scale.set(0.003, 0.003, 0.003);
-                                        object.rotateX(-Math.PI / 2);
-                                        objMain.rmbModel[field] = object;
-
-                                    }, function () { }, function () { });
-                            });
-                    };
-                    //  f(received_obj, received_obj.faceValue);
-                    switch (received_obj.faceValue) {
-                        case 'model':
-                            {
-                                objMain.rmbModel.geometry = received_obj.modelBase64;
-                                objMain.ws.send('SetRMB');
-                            }; break;
-                        case 'rmb100':
-                        case 'rmb50':
-                        case 'rmb20':
-                        case 'rmb10':
-                        case 'rmb5':
-                            {
-                                f(received_obj, received_obj.faceValue);
-                                objMain.ws.send('SetRMB');
-                            }; break;
-                        case 'rmb1':
-                            {
-                                f(received_obj, received_obj.faceValue);
-                                objMain.rmbModel.geometry = undefined;
-                                objMain.ws.send('SetRMB');
-                            }; break;
-                        //case 'rmb1':
-                        //    {
-                        //        f(received_obj, received_obj.faceValue);
-                        //        objMain.rmbModel.geometry = undefined;
-                        //        objMain.ws.send('SetRMB');
-                        //    }; break;
-                    };
-                }; break;
-            case 'SetSpeedIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.speed = objectInput;
-
-                        },
-                        transparent: { opacity: 0.7 },
-                        color: { r: 2, g: 1, b: 2 }
-                    });
-                    objMain.ws.send('SetSpeedIcon');
-                }; break;
-            case 'SetAttackIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.attack = objectInput;
-
-                        },
-                        transparent: { opacity: 0.5 },
-                        color: { r: 2, g: 2, b: 0.4 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetAttackIcon');
-                }; break;
-            case 'SetShield':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.shield = objectInput;
-
-                        },
-                        transparent: { opacity: 0.8 },
-                        color: { r: 2, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetShield');
-                }; break;
-            case 'SetConfusePrepareIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.confusePrepare = objectInput;
-
-                        },
-                        transparent: { opacity: 0.8 },
-                        color: { r: 1.5, g: 1.5, b: 1.5 }
-                    });
-                    objMain.ws.send('SetConfusePrepareIcon');
-                }; break;
-            case 'SetLostPrepareIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.lostPrepare = objectInput;
-
-                        },
-                        transparent: { opacity: 1 },
-                        color: { r: 1, g: 1.2, b: 1.2 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetLostPrepareIcon');
-                }; break;
-            case 'SetAmbushPrepareIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            objMain.ModelInput.ambushPrepare = objectInput;
-
-                        },
-                        transparent: { opacity: 1 },
-                        color: { r: 1.3, g: 0.9, b: 0.9 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetAmbushPrepareIcon');
-                }; break;
-            case 'SetWaterIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            objMain.ModelInput.water = objectInput;
-                        },
-                        //transparent: { opacity: 0.2 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetWaterIcon');
-                }; break;
-            case 'SetDirectionIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            objMain.ModelInput.direction = objectInput;
-                        },
-                        transparent: { opacity: 0.3 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetDirectionIcon');
-                }; break;
-            case 'SetDirectionArrowIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1, 2, 1);
-                            objMain.ModelInput.directionArrow =
-                            {
-                                'obj': objectInput,
-                                'oldM': oldM,
-                                'newM': newM
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.3 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetDirectionArrowIcon');
-                }; break;
-            case 'SetDirectionArrowIconA':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1, 2, 1);
-                            objMain.ModelInput.directionArrowA =
-                            {
-                                'obj': objectInput,
-                                'oldM': oldM,
-                                'newM': newM
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.61 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetDirectionArrowIconA');
-                }; break;
-            case 'SetDirectionArrowIconB':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1, 2, 1);
-                            objMain.ModelInput.directionArrowB =
-                            {
-                                'obj': objectInput,
-                                'oldM': oldM,
-                                'newM': newM
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.61 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetDirectionArrowIconB');
-                }; break;
-            case 'SetDirectionArrowIconC':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1, 2, 1);
-                            objMain.ModelInput.directionArrowC =
-                            {
-                                'obj': objectInput,
-                                'oldM': oldM,
-                                'newM': newM
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.61 },
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetDirectionArrowIconC');
-                }; break;
-            case 'SetOpponentIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1.2, 1.2, 1.2);
-                            objMain.ModelInput.Opponent =
-                            {
-                                'obj': objectInput
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.8 },
-                        scale: { x: 1, y: 1, z: 1 },
-                        rotateX: Math.PI
-                        //color: { r: 1, g: 1, b: 1 }
-                        //transparent: { opacity: 0 }
-                    });
-                    objMain.ws.send('SetOpponentIcon');
-                }; break;
-            case 'SetTeammateIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            var oldM = objectInput.children[0].material;
-                            var newM = objectInput.children[0].material.clone();
-                            newM.transparent = false;
-                            newM.color = new THREE.Color(1.2, 1.2, 1.2);
-                            objMain.ModelInput.Teammate =
-                            {
-                                'obj': objectInput
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.8 },
-                        scale: { x: 1, y: 1, z: 1 },
-                        rotateX: Math.PI
-                    });
-                    objMain.ws.send('SetTeammateIcon');
-                }; break;
-            case 'SetNitrogenEffectIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            //var oldM = objectInput.children[0].material;
-                            //var newM = objectInput.children[0].material.clone();
-                            //newM.transparent = false;
-                            //newM.color = new THREE.Color(1.2, 1.2, 1.2);
-                            objectInput.name = 'selfnitrogenEffectIcon'
-                            objMain.ModelInput.NitrogenEffect =
-                            {
-                                'obj': objectInput
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.8 },
-                        scale: { x: 1, y: 1, z: 1 },
-                        rotateX: Math.PI
-                    });
-                    objMain.ws.send('SetNitrogenEffectIcon');
-                }; break;
-            case 'SetCoinIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            //var oldM = objectInput.children[0].material;
-                            //var newM = objectInput.children[0].material.clone();
-                            //newM.transparent = false;
-                            //newM.color = new THREE.Color(1.2, 1.2, 1.2);
-                            objectInput.name = 'collectCoinIcon'
-                            objMain.ModelInput.CollectCoinIcon =
-                            {
-                                'obj': objectInput
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.8 },
-                        scale: { x: 1, y: 1, z: 1 },
-                        rotateX: Math.PI
-                    });
-                    objMain.ws.send('SetCoinIcon');
-                }; break;
-            case 'SetGoldIngotIcon':
-                {
-                    ModelOperateF.f(received_obj, {
-                        bind: function (objectInput) {
-                            //objMain.ModelInput.ambushPrepare = objectInput;
-                            //objMain.ModelInput.directionArrow = objectInput;
-                            //var oldM = objectInput.children[0].material;
-                            //var newM = objectInput.children[0].material.clone();
-                            //newM.transparent = false;
-                            //newM.color = new THREE.Color(1.2, 1.2, 1.2);
-                            objectInput.name = 'goldIngotIcon'
-                            objMain.ModelInput.GoldIngotIcon =
-                            {
-                                'obj': objectInput
-                            };//objectInput;
-                        },
-                        transparent: { opacity: 0.8 },
-                        scale: { x: 0.006, y: 0.006, z: 0.006 },
-                        rotateX: -Math.PI / 2
-                    });
-                    objMain.ws.send('SetGoldIngotIcon');
-
-                }; break;
-            case 'BradCastAnimateOfOthersCar3':
-                {
-                    var passObj = JSON.parse(evt.data);
-                    // console.log('BradCastAnimateOfOthersCar3', passObj);
-                    passObj.passPrivateKeysOnly = false;
-                    carAnimationData(passObj);
-                }; break;
-            case 'BradCastAnimateOfOthersCar4':
-                {
-                    var passObj = JSON.parse(evt.data);
-                    // console.log('BradCastAnimateOfOthersCar3', passObj);
-                    passObj.passPrivateKeysOnly = true;
-                    carAnimationData(passObj);
-                }; break;
-            case 'BradCastPromoteInfoDetail':
-                {
-                    //alert('1');
-                    console.log('显示', received_obj);
-                    //  switch (received_obj.
-                    objMain.PromotePositions[received_obj.resultType] = received_obj;
-                    objMain.mainF.refreshPromotionDiamondAndPanle(received_obj);
 
 
-                }; break;
-            case 'BradCastCollectInfoDetail':
-                {
-                    //  console.log('显示', received_obj);
-                    //  switch (received_obj.
-                    objMain.CollectPosition = received_obj;
-                    //objMain.mainF.refreshCollectAndPanle(received_obj.);
-                    //  objMain.mainF.refreshCollectPositionAndPanle(received_obj);
-                    // objMain.mainF.refreshPromotionDiamondAndPanle(received_obj);
-                }; break;
-            case 'SetDiamond':
-                {
-                    DiamondModel.initialize(received_obj);
-                    var manager = new THREE.LoadingManager();
-                    new THREE.OBJLoader(manager)
-                        .loadTextOnly(received_obj.objText, function (object) {
-                            console.log('SetDiamond', object.children[0].geometry);
-                            var geometry = object.children[0].geometry;
-                            objMain.diamondGeometry = geometry;
-                        }, function () { }, function () { });
-
-                    objMain.ws.send('SetDiamond');
-                }; break;
-            case 'DialogMsg':
-                {
-                    dialogSys.dealWithMsg(received_obj);
-                }; break;
-            case 'BradCastMoneyForSave':
-                {
-                    objMain.MoneyForSave = received_obj.Money;
-                    //  moneyOperator.updateSaveMoneyNotify();
-                }; break;
-            case 'BradCastPromoteDiamondCount':
-                {
-                    objMain.PromoteDiamondCount[received_obj.pType] = received_obj.count;
-                    objMain.mainF.drawDiamondCollected();
-                }; break;
-            case 'BradCastAbility':
-                {
-                    carAbility.drawPanel('car');
-                    carAbility.setData(received_obj);
-
-                    carAbility.drawChanel(received_obj.carIndexStr);
-                    carAbility.refreshPosition();
-                    //carAbility.updateNotify();
-                }; break;
-            case 'MoneyForSaveNotify':
-                {
-                    moneyOperator.MoneyForSave = received_obj.MoneyForSave;
-                    moneyOperator.MoneyForFixRoad = received_obj.MoneyForFixRoad;
-
-                    if (moneyOperator.MoneyForSave > 1) {
-                        if (sessionStorage['addrAfterSuccess'] == undefined) { }
-                        else if (sessionStorage['addrAfterSuccess'] == '') { }
-                        else {
-                            /*从LeftMoneyInDB 移到 MoneyForSaveNotify*/
-                            /*预防只是登录一下，刷新真实数据*/
-                            nyrqUrl.set(sessionStorage['addrAfterSuccess']);
-                        }
-                    }
-                    moneyOperator.updateMoneyForSave();
-                }; break;
-            case 'LeftMoneyInDB':
-                {
-                    subsidizeSys.LeftMoneyInDB[received_obj.address] = received_obj.Money;
-                    subsidizeSys.updateMoneyOfSumSubsidizing();
-                }; break;
-            case 'SupportNotify':
-                {
-                    subsidizeSys.SupportMoney = received_obj.Money;
-                    subsidizeSys.updateMoneyOfSumSubsidized();
-                }; break;
-            case 'TheLargestHolderChangedNotify':
-                {
-                    theLagestHoderKey.data[received_obj.operateKey] = received_obj;
-                    objMain.mainF.updateCollectGroup();
-                }; break;
-            case 'OthersRemove':
-                {
-                    objMain.mainF.removeRole(received_obj.othersKey);
-                    theLagestHoderKey.removeData(received_obj.othersKey);
-
-                    delete SocialResponsibility.data[received_obj.othersKey];
-                    delete objMain.rightAndDuty.data[received_obj.othersKey];
-                    // SocialResponsibility.data[received_obj.otherKey] = received_obj.socialResponsibility;
-                }; break;
-            case 'SingleRoadPathData':
-                {
-                    // MapData.meshPoints.push(received_obj.meshPoints);
-                    var basePoint = received_obj.basePoint;
-                    for (var i = 0; i < received_obj.meshPoints.length; i += 12) {
-                        var itemData = [
-                            (received_obj.meshPoints[i + 0] + basePoint[0]) / 1000000,
-                            (received_obj.meshPoints[i + 1] + basePoint[1]) / 1000000,
-                            (received_obj.meshPoints[i + 2] + basePoint[2]) / 1000000,
-                            (received_obj.meshPoints[i + 3] + basePoint[0]) / 1000000,
-                            (received_obj.meshPoints[i + 4] + basePoint[1]) / 1000000,
-                            (received_obj.meshPoints[i + 5] + basePoint[2]) / 1000000,
-                            (received_obj.meshPoints[i + 6] + basePoint[0]) / 1000000,
-                            (received_obj.meshPoints[i + 7] + basePoint[1]) / 1000000,
-                            (received_obj.meshPoints[i + 8] + basePoint[2]) / 1000000,
-                            (received_obj.meshPoints[i + 9] + basePoint[0]) / 1000000,
-                            (received_obj.meshPoints[i + 10] + basePoint[1]) / 1000000,
-                            (received_obj.meshPoints[i + 11] + basePoint[2]) / 1000000
-                        ];
-                        //var itemData = [
-                        //    (received_obj.meshPoints[i + 0] + basePoint[0]) / 1000000,
-                        //    (received_obj.meshPoints[i + 1] + basePoint[1]) / 1000000,
-                        //    (received_obj.meshPoints[i + 2] + basePoint[0]) / 1000000,
-                        //    (received_obj.meshPoints[i + 3] + basePoint[1]) / 1000000,
-                        //    (received_obj.meshPoints[i + 4] + basePoint[0]) / 1000000,
-                        //    (received_obj.meshPoints[i + 5] + basePoint[1]) / 1000000,
-                        //    (received_obj.meshPoints[i + 6] + basePoint[0]) / 1000000,
-                        //    (received_obj.meshPoints[i + 7] + basePoint[1]) / 1000000,
-                        //];
-                        MapData.meshPoints.push(itemData);
-                        // MapData.meshPoints.push(received_obj.meshPoints[i]);
-                    }
-
-                    var drawRoadInfomation = function () {
-
-                        {
-                            var group = objMain.roadGroup;
-                            var startIndex = group.children.length - 1;
-                            for (var i = startIndex; i >= 0; i--) {
-                                //if (group.children[i].type == "Mesh")
-                                {
-                                    group.children[i].geometry.dispose();
-                                    group.children[i].material.dispose();
-                                }
-                            }
-                        }
-
-                        objMain.mainF.removeF.clearGroup(objMain.roadGroup);
-                        //  objMain.F.clearGroup(
-                        var obj = MapData.meshPoints;
-
-                        var positions = [];
-                        //   var colors = [];
-                        for (var i = 0; i < obj.length; i++) {
-                            positions.push(
-                                MercatorGetXbyLongitude(obj[i][0]), MercatorGetXbyLongitude(obj[i][2]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][1]),
-                                MercatorGetXbyLongitude(obj[i][3]), MercatorGetXbyLongitude(obj[i][5]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][4]),
-                                MercatorGetXbyLongitude(obj[i][6]), MercatorGetXbyLongitude(obj[i][8]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][7]),
-                                MercatorGetXbyLongitude(obj[i][6]), MercatorGetXbyLongitude(obj[i][8]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][7]),
-                                MercatorGetXbyLongitude(obj[i][9]), MercatorGetXbyLongitude(obj[i][11]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][10]),
-                                MercatorGetXbyLongitude(obj[i][0]), MercatorGetXbyLongitude(obj[i][2]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][1]),
-
-                            );
-                        }
-                        function disposeArray() {
-
-                            this.array = null;
-
-                        }
-                        //  console.log('p', positions);
-                        //var vertices = new Float32Array(positions);
-                        var geometry = new THREE.BufferGeometry();
-                        geometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3).onUpload(disposeArray));
-                        //geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3).onUpload(disposeArray));
-                        geometry.computeBoundingSphere();
-                        //var material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
-                        var material = new THREE.MeshBasicMaterial({ color: 0xeedd78 });
-                        var mesh = new THREE.Mesh(geometry, material);
-
-                        objMain.roadGroup.add(mesh);
 
 
-                        var edges = new THREE.EdgesGeometry(geometry);
-                        var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xeeddf0 }));
-                        objMain.roadGroup.add(line);
-                    };
-                    drawRoadInfomation();
-                }; break;
-            case 'SingleRoadPathData_V2':
-                {
-                    var roadCode = received_obj.RoadCode;
-                    var dataHash = received_obj.DataHash;
-                    roadDisplayFunction.show(dataHash, roadCode);
-                }; break;
-            case 'SetLeaveGameIcon':
-                {
-                    objMain.ws.send('SetLeaveGameIcon');
-                    //alert('SetLeaveGameIcon');
-                    var obj = received_obj.data[0];
-                    var mtl = received_obj.data[1];
-                    var imageBase64s = {};
-                    for (var i = 2; i < received_obj.data.length; i += 2) {
-                        var index = received_obj.data[i];
-                        var data = received_obj.data[i + 1];
-                        imageBase64s[index] = 'data:image/jpeg;base64,' + data;
-                    }
-                    console.log('imageBase64s', imageBase64s);
-                    // objMain.leaveGameModel = received_obj.
-                    var f = function (obj, mtl, imageBase64s) {
-                        var manager = new THREE.LoadingManager();
-                        new THREE.MTLLoader(manager)
-                            .loadTextWithMulImg(mtl, imageBase64s, function (materials) {
-                                materials.preload();
-                                // materials.depthTest = false;
-                                new THREE.OBJLoader(manager)
-                                    .setMaterials(materials)
-                                    //.setPath('/Pic/')
-                                    .loadTextOnly(obj, function (object) {
-                                        console.log('o', object);
-                                        //for (var iOfO = 0; iOfO < object.children.length; iOfO++) {
-                                        //    if (object.children[iOfO].isMesh) {
-                                        //        for (var mi = 0; mi < object.children[iOfO].material.length; mi++) {
-                                        //            object.children[iOfO].material[mi].transparent = true;
-                                        //            object.children[iOfO].material[mi].opacity = 1;
-                                        //            object.children[iOfO].material[mi].side = THREE.FrontSide;
-                                        //            object.children[iOfO].material[mi].color = new THREE.Color(0.45, 0.45, 0.45);
-                                        //        }
-                                        //    }
-                                        //}
-                                        console.log('o', object);
-                                        object.scale.set(0.003, 0.003, 0.003);
-                                        object.rotateX(-Math.PI / 2);
-                                        objMain.leaveGameModel = object;
-                                        // objMain.rmbModel[field] = object;
-
-                                    }, function () { }, function () { });
-                            });
-                    };
-                    f(obj, mtl, imageBase64s);
-                }; break;
-            case 'SetProfileIcon':
-                {
-                    objMain.ws.send('ProfileIcon');
-                    //alert('SetLeaveGameIcon');
-                    var obj = received_obj.data[0];
-                    var mtl = received_obj.data[1];
-                    var imageBase64s = {};
-                    for (var i = 2; i < received_obj.data.length; i += 2) {
-                        var index = received_obj.data[i];
-                        var data = received_obj.data[i + 1];
-                        imageBase64s[index] = 'data:image/jpeg;base64,' + data;
-                    }
-                    console.log('imageBase64s', imageBase64s);
-                    // objMain.leaveGameModel = received_obj.
-                    var f = function (obj, mtl, imageBase64s) {
-                        var manager = new THREE.LoadingManager();
-                        new THREE.MTLLoader(manager)
-                            .loadTextWithMulImg(mtl, imageBase64s, function (materials) {
-                                materials.preload();
-                                // materials.depthTest = false;
-                                new THREE.OBJLoader(manager)
-                                    .setMaterials(materials)
-                                    //.setPath('/Pic/')
-                                    .loadTextOnly(obj, function (object) {
-                                        console.log('o', object);
-                                        //for (var iOfO = 0; iOfO < object.children.length; iOfO++) {
-                                        //    if (object.children[iOfO].isMesh) {
-                                        //        for (var mi = 0; mi < object.children[iOfO].material.length; mi++) {
-                                        //            object.children[iOfO].material[mi].transparent = true;
-                                        //            object.children[iOfO].material[mi].opacity = 1;
-                                        //            object.children[iOfO].material[mi].side = THREE.FrontSide;
-                                        //            object.children[iOfO].material[mi].color = new THREE.Color(0.45, 0.45, 0.45);
-                                        //        }
-                                        //    }
-                                        //}
-                                        console.log('o', object);
-                                        object.scale.set(0.003, 0.003, 0.003);
-                                        object.rotateX(-Math.PI / 2);
-                                        objMain.profileModel = object;
-                                        // objMain.rmbModel[field] = object;
-
-                                    }, function () { }, function () { });
-                            });
-                    };
-                    f(obj, mtl, imageBase64s);
-                }; break;
             case 'MoneyNotify':
                 {
                     objMain.Money = received_obj.Money;
@@ -2617,7 +1899,8 @@ var objMain =
         loopCount: 0
     },
     groupNumber: -1,
-    jscwObj: null
+    jscwObj: null,
+    diceRotating: false
 };
 var startA = function () {
     var connected = false;
@@ -2629,22 +1912,22 @@ var startA = function () {
                 switch (r) {
                     case 'A':
                         {
-                            wsConnect = 'ws://127.0.0.1:11001/websocket';
+                            wsConnect = 'ws://127.0.0.1:17001/mahjong';
                         }; break;
                     case 'B':
                         {
-                            wsConnect = 'ws://127.0.0.1:11002/websocket';
+                            wsConnect = 'ws://127.0.0.1:11002/mahjong';
                         }; break;
                     default:
                         {
-                            wsConnect = 'ws://127.0.0.1:11001/websocket';
+                            wsConnect = 'ws://127.0.0.1:11001/mahjong';
                         }
                 }
 
             }; break;
         case 1:
             {
-                wsConnect = 'ws://192.168.0.112:11001/websocket';
+                wsConnect = 'ws://192.168.0.112:11001/mahjong';
             }; break;
         default:
             {
@@ -2792,64 +2075,13 @@ function animate() {
                         }
                     }
 
-                    stateSet.lightning.mark.Animate();
-                    stateSet.water.mark.Animate();
-                    stateSet.fire.mark.Animate();
-
-                    for (var i = 0; i < objMain.promoteDiamond.children.length; i++) {
-                        /*
-                         * 初始化 砖石/人民币的大小
-                         */
-                        if (objMain.promoteDiamond.children[i].isMesh) {
-                            objMain.promoteDiamond.children[i].scale.set(0.2, 0.22, 0.2);
-
-                            var fp = objMain.promoteDiamond.children[i].userData.Fp;// 
-                            objMain.promoteDiamond.children[i].position.set(
-                                MercatorGetXbyLongitude(fp.Longitude),
-                                MercatorGetZbyHeight(fp.Height) * objMain.heightAmplify,
-                                -MercatorGetYbyLatitude(fp.Latitde));
-
-                            // objMain.promoteDiamond.children[i].position.y = 0;
-                            // objMain.promoteDiamond.children[i].rotation.y=
-                        }
-                    }
-
-                    for (var i = 0; i < objMain.columnGroup.children.length; i++) {
-
-                        if (objMain.columnGroup.children[i].isMesh) {
-                            objMain.columnGroup.children[i].scale.setX(1);
-                            objMain.columnGroup.children[i].scale.setZ(1);
-                        }
-                    }
-                    for (var i = 0; i < objMain.buildingGroup.children.length; i++) {
-                        objMain.buildingGroup.children[i].scale.setX(1);
-                        objMain.buildingGroup.children[i].scale.setZ(1);
-                        objMain.buildingGroup.children[i].visible = false;
-                        if (objMain.mainF.getLength(objMain.controls.target, objMain.buildingGroup.children[i].position) < lengthOfCC * 5) {
-                            objMain.buildingGroup.children[i].visible = true;
-                        }
-                        if (objMain.buildingGroup.children[i].visible) {
-                            continue;
-                        }
-                        else {
-                            var selfCar = objMain.carGroup.getObjectByName('car_' + objMain.indexKey);
-                            if (objMain.mainF.getLength(selfCar.position, objMain.buildingGroup.children[i].position) < lengthOfCC * 5) {
-                                objMain.buildingGroup.children[i].visible = true;
-                            }
-                        }
-                        if (objMain.buildingGroup.children[i].visible) {
-                            continue;
-                        }
-                        else {
-                            for (var j = 0; j < drawGoodsSelection.data.length; j++) {
-                                var end = drawGoodsSelection.data[j];
-                                if (objMain.mainF.getLength(end, objMain.buildingGroup.children[i].position) < lengthOfCC) {
-                                    objMain.buildingGroup.children[i].visible = true;
-                                    break;
-                                }
-                            }
-                        }
-                        //显示3km以内的建筑物
+                    if (objMain.diceRotating) {
+                        //  objMain
+                        objMain.diceGroup.getObjectByName('dice1').rotation.set((Date.now() % 200 / 100) * Math.PI, (Date.now() % 300 / 150) * Math.PI, (Date.now() % 160 / 80) * Math.PI, 'YZX');
+                        objMain.diceGroup.getObjectByName('dice2').rotation.set((Date.now() % 400 / 200) * Math.PI, (Date.now() % 600 / 350) * Math.PI, (Date.now() % 250 / 125) * Math.PI, 'YZX');
+                        // objMain.diceGroup.getObjectByName('dice2').rotation.set((Date.now() % 400 / 200) * Math.PI, (Date.now() % 600 / 350) * Math.PI, (Date.now() % 250 / 125) * Math.PI, 'YZX');
+                        objMain.diceGroup.getObjectByName('dice2').position.x = 0.03 + 0.01 + Math.sin((Date.now() % 400 / 200) * Math.PI) * 0.01;
+                        //  objMain.diceGroup.rotation.set(0.8, 0, 0)
                     }
                     {
                         var lengthOfObjs = objMain.groupOfOperatePanle.children.length;
@@ -3343,7 +2575,7 @@ function animate() {
                     theLagestHoderKey.animate();
                     objMain.renderer.render(objMain.scene, objMain.camera);
                     objMain.labelRenderer.render(objMain.scene, objMain.camera);
-                    objMain.light1.position.set(objMain.camera.position.x + lengthOfCC / 3, objMain.camera.position.y, objMain.camera.position.z + lengthOfCC / 3);
+                    // objMain.light1.position.set(objMain.camera.position.x + lengthOfCC / 3, objMain.camera.position.y, objMain.camera.position.z + lengthOfCC / 3);
                     if (objMain.directionGroup.visible) {
                         var minAngle = Math.PI / 20;
                         var selectIndex = -1;
@@ -3400,7 +2632,7 @@ function animate() {
                     }
                     objMain.renderer.render(objMain.scene, objMain.camera);
                     objMain.labelRenderer.render(objMain.scene, objMain.camera);
-                    objMain.light1.position.set(objMain.camera.position.x, objMain.camera.position.y, objMain.camera.position.z);
+                    //    objMain.light1.position.set(objMain.camera.position.x, objMain.camera.position.y, objMain.camera.position.z);
 
                 }; break;
             case 'QueryReward':
@@ -3413,7 +2645,7 @@ function animate() {
                         var lengthOfCC = objMain.mainF.getLength(objMain.camera.position, objMain.controls.target);
                         // var deltaYOfSelectObj = 0;
                         animateDetailF.moveCamara(lengthOfCC);
-                        objMain.light1.position.set(objMain.camera.position.x + lengthOfCC / 3, objMain.camera.position.y, objMain.camera.position.z + lengthOfCC / 3);
+                        // objMain.light1.position.set(objMain.camera.position.x + lengthOfCC / 3, objMain.camera.position.y, objMain.camera.position.z + lengthOfCC / 3);
                     }
 
                 }; break;
@@ -3549,461 +2781,14 @@ var buttonClick = function (v) {
     selectSingleTeamJoinHtmlF.canBtnClick = false;
 }
 
-var QueryReward =
-{
-    draw3D: function () {
-        document.getElementById('rootContainer').innerHTML = '';
-        var mainC = document.createElement('div');
-        mainC.id = 'mainC';
 
-        mainC.className = 'container';
-        document.getElementById('rootContainer').appendChild(mainC);
-        objMain.scene = new THREE.Scene();
 
-        var cubeTextureLoader = new THREE.CubeTextureLoader();
-        cubeTextureLoader.setPath('Pic/');
-        var cubeTexture = cubeTextureLoader.load([
-            "px.jpg", "nx.jpg",
-            "py.jpg", "ny.jpg",
-            "pz.jpg", "nz.jpg"
-        ]);
-        objMain.scene.background = cubeTexture;
 
-        objMain.renderer = new THREE.WebGLRenderer({ alpha: true });
-        objMain.renderer.setClearColor(0x000000, 0); // the default
-        objMain.renderer.setPixelRatio(window.devicePixelRatio);
-        objMain.renderer.setSize(window.innerWidth, window.innerHeight);
-        objMain.renderer.domElement.className = 'renderDom';
-        document.getElementById('mainC').appendChild(objMain.renderer.domElement);
-        //  document.body
-
-        objMain.labelRenderer = new THREE.CSS2DRenderer();
-        objMain.labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        objMain.labelRenderer.domElement.className = 'labelRenderer';
-        //objMain.labelRenderer.domElement.style.curs
-        document.getElementById('mainC').appendChild(objMain.labelRenderer.domElement);
-
-        objMain.camera = new THREE.PerspectiveCamera(35, 1, 0.1, 30000);
-        objMain.camera.position.set(4000, 2000, 0);
-        objMain.camera.position.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 20, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
-
-        objMain.controls = new THREE.OrbitControls(objMain.camera, objMain.labelRenderer.domElement);
-        objMain.controls.center.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 0, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
-
-        objMain.roadGroup = new THREE.Group();
-        objMain.scene.add(objMain.roadGroup);
-
-        objMain.playerGroup = new THREE.Group();
-        objMain.scene.add(objMain.playerGroup);
-
-        objMain.promoteDiamond = new THREE.Group();
-        objMain.scene.add(objMain.promoteDiamond);
-
-        objMain.columnGroup = new THREE.Group();
-        objMain.scene.add(objMain.columnGroup);
-
-        objMain.carGroup = new THREE.Group();
-        objMain.scene.add(objMain.carGroup);
-
-        objMain.groupOfOperatePanle = new THREE.Group();
-        objMain.scene.add(objMain.groupOfOperatePanle);
-
-        objMain.collectGroup = new THREE.Group();
-        objMain.scene.add(objMain.collectGroup);
-
-        objMain.getOutGroup = new THREE.Group();
-        objMain.scene.add(objMain.getOutGroup);
-
-        objMain.taxGroup = new THREE.Group();
-        objMain.scene.add(objMain.taxGroup);
-
-        objMain.shieldGroup = new THREE.Group();
-        objMain.scene.add(objMain.shieldGroup);
-
-        objMain.confusePrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.confusePrepareGroup);
-
-        objMain.lostPrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.lostPrepareGroup);
-
-        objMain.ambushPrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.ambushPrepareGroup);
-
-        objMain.waterGroup = new THREE.Group();
-        objMain.scene.add(objMain.waterGroup);
-
-        objMain.fireGroup = new THREE.Group();
-        objMain.scene.add(objMain.fireGroup);
-
-        objMain.lightningGroup = new THREE.Group();
-        objMain.scene.add(objMain.lightningGroup);
-
-        objMain.directionGroup = new THREE.Group();
-        objMain.scene.add(objMain.directionGroup);
-
-        objMain.buildingGroup = new THREE.Group();
-        objMain.scene.add(objMain.buildingGroup);
-
-        objMain.clock = new THREE.Clock();
-
-        {
-            objMain.light1 = new THREE.PointLight(0xffffff);
-            objMain.light1.position.set(-100, 300, -100);
-            objMain.light1.intensity = 2;
-            objMain.scene.add(objMain.light1);
-        }
-
-        {
-            //objMain.controls.minDistance = 3;
-            // objMain.controls.maxPolarAngle = Math.PI;
-            objMain.controls.minPolarAngle = Math.PI / 600;
-            objMain.controls.maxPolarAngle = Math.PI / 2 - Math.PI / 36;
-            objMain.controls.minDistance = 2;
-            objMain.controls.maxDistance = 256;
-        }
-
-        objMain.raycaster = new THREE.Raycaster();
-        objMain.raycaster.linePrecision = 0.2;
-
-        objMain.raycasterOfSelector = new THREE.Raycaster();
-        //objMain.raycasterOfSelector.linePrecision = 100;
-
-        objMain.mouse = new THREE.Vector2();
-
-        //objMain.labelRenderer.domElement.addEventListener
-
-        var operateEnd = function (event) {
-            operatePanel.refresh();
-            return;
-        }
-        var operateStart = function (event) {
-            objMain.canSelect = true;
-            objMain.music.change();
-            objMain.music.MarketRepeat();
-        }
-        objMain.labelRenderer.domElement.addEventListener('mouseup', operateEnd, false);
-        objMain.labelRenderer.domElement.addEventListener('mousedown', operateStart, false);
-
-
-        objMain.labelRenderer.domElement.addEventListener('touchstart', operateStart, false);
-        objMain.labelRenderer.domElement.addEventListener('touchend', operateEnd, false);
-
-        window.addEventListener('resize', onWindowResize, false);
-        onWindowResize();
-    },
-    lookAt: function () {
-        if (objMain.state == 'QueryReward') {
-            var selectBuilding = objMain.buildingGroup.children[0];
-            var animationData =
-            {
-                old: {
-                    x: objMain.controls.target.x,
-                    y: objMain.controls.target.y,
-                    z: objMain.controls.target.z,
-                    t: Date.now()
-                },
-                newT:
-                {
-                    x: selectBuilding.position.x,
-                    y: selectBuilding.position.y,
-                    z: selectBuilding.position.z,
-                    t: Date.now() + 3000
-                }
-            };
-            objMain.camaraAnimateData = animationData;
-        }
-    },
-    drawToolBar: function (title) {
-        if (objMain.state == 'QueryReward') {
-            while (document.getElementById('sysOperatePanel') != null) {
-                document.getElementById('sysOperatePanel').remove();
-            }
-            var divSysOperatePanel = document.createElement('div');
-            divSysOperatePanel.id = 'sysOperatePanel';
-            divSysOperatePanel.style.position = 'absolute';
-            divSysOperatePanel.style.zIndex = '7';
-            divSysOperatePanel.style.top = 'calc(100% - 2.5em - 8px)';
-            divSysOperatePanel.style.left = '8px';
-            divSysOperatePanel.style.width = 'calc(100% - 16px)';
-            {
-                var img = document.createElement('img');
-                img.id = 'QueryRewardExit';
-                img.src = 'Pic/settingIcon.png';
-                img.classList.add('chatdialog');
-                img.style.border = 'solid 1px orange';
-                img.style.borderRadius = '5px';
-                img.style.height = 'calc(2.5em - 2px)';
-                img.style.width = 'auto';
-                img.style.marginLeft = 'calc(100% - 2.5em - 2px)';
-                // img.style.right = '0.5em';
-
-                img.onclick = function () {
-                    while (document.getElementById('sysOperatePanel') != null) {
-                        document.getElementById('sysOperatePanel').remove();
-                    }
-                    objMain.mainF.removeF.clearGroup(objMain.roadGroup);
-                    MapData.meshPoints = [];
-                    objMain.mainF.removeF.clearGroup(objMain.buildingGroup);
-
-                    objMain.renderer = null;
-                    objMain.labelRenderer = null;
-                    document.getElementById('rootContainer').innerHTML = '';
-                    objMain.ws.send(JSON.stringify({ 'c': 'RewardInfomation', 'Page': reward.page }));
-                    //alert(title);
-                };
-
-                divSysOperatePanel.appendChild(img);
-            }
-            document.body.appendChild(divSysOperatePanel);
-        }
-
-    },
-}
-
-var setTransactionHtml =
-{
-    bussinessAddress: '',
-    draw3D: function () {
-        //var text = "";
-        //text += "  <div>";
-        //text += "            3D界面";
-        //text += "        </div>";
-        //document.getElementById('rootContainer').innerHTML = text;
-        document.getElementById('rootContainer').innerHTML = '';
-
-        //<div id="mainC" class="container" onclick="testTop();">
-        //    <!--<img />-->
-        //    <!--<a href="DAL/MapImage.ashx">DAL/MapImage.ashx</a>-->
-        //    <img src="Pic/11.png" />
-        //</div>
-        var mainC = document.createElement('div');
-        mainC.id = 'mainC';
-
-        mainC.className = 'container_Show';
-        document.getElementById('rootContainer').appendChild(mainC);
-        document.getElementById('rootContainer').style.overflow = 'scroll';
-        objMain.scene = new THREE.Scene();
-        //objMain.scene.background = new THREE.Color(0x7c9dd4);
-        //objMain.scene.fog = new THREE.FogExp2(0x7c9dd4, 0.2);
-
-        var cubeTextureLoader = new THREE.CubeTextureLoader();
-        cubeTextureLoader.setPath('Pic/');
-        //var cubeTexture = cubeTextureLoader.load([
-        //    "xi_r.jpg", "dong_r.jpg",
-        //    "ding_r.jpg", "di_r.jpg",
-        //    "nan_r.jpg", "bei_r.jpg"
-        //]);
-        var cubeTexture = cubeTextureLoader.load([
-            "px.jpg", "nx.jpg",
-            "py.jpg", "ny.jpg",
-            "pz.jpg", "nz.jpg"
-        ]);
-        objMain.scene.background = cubeTexture;
-
-        objMain.renderer = new THREE.WebGLRenderer({ alpha: true });
-        objMain.renderer.setClearColor(0x000000, 0); // the default
-        objMain.renderer.setPixelRatio(window.devicePixelRatio);
-        objMain.renderer.setSize(300, 300);
-        objMain.renderer.domElement.className = 'renderDom_Trans';
-        document.getElementById('mainC').appendChild(objMain.renderer.domElement);
-        //  document.body
-
-        objMain.labelRenderer = new THREE.CSS2DRenderer();
-        objMain.labelRenderer.setSize(300, 300);
-        objMain.labelRenderer.domElement.className = 'labelRenderer_Trans';
-        //objMain.labelRenderer.domElement.style.curs
-        document.getElementById('mainC').appendChild(objMain.labelRenderer.domElement);
-
-        objMain.camera = new THREE.PerspectiveCamera(35, 1, 0.1, 30000);
-        objMain.camera.position.set(4000, 2000, 0);
-        objMain.camera.position.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 20, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
-
-        objMain.controls = new THREE.OrbitControls(objMain.camera, objMain.labelRenderer.domElement);
-        objMain.controls.center.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 0, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
-
-        objMain.roadGroup = new THREE.Group();
-        objMain.scene.add(objMain.roadGroup);
-
-        objMain.playerGroup = new THREE.Group();
-        objMain.scene.add(objMain.playerGroup);
-
-        objMain.promoteDiamond = new THREE.Group();
-        objMain.scene.add(objMain.promoteDiamond);
-
-        objMain.columnGroup = new THREE.Group();
-        objMain.scene.add(objMain.columnGroup);
-
-        objMain.carGroup = new THREE.Group();
-        objMain.scene.add(objMain.carGroup);
-
-        objMain.groupOfOperatePanle = new THREE.Group();
-        objMain.scene.add(objMain.groupOfOperatePanle);
-
-        objMain.collectGroup = new THREE.Group();
-        objMain.scene.add(objMain.collectGroup);
-
-        objMain.getOutGroup = new THREE.Group();
-        objMain.scene.add(objMain.getOutGroup);
-
-        objMain.taxGroup = new THREE.Group();
-        objMain.scene.add(objMain.taxGroup);
-
-        objMain.shieldGroup = new THREE.Group();
-        objMain.scene.add(objMain.shieldGroup);
-
-        objMain.confusePrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.confusePrepareGroup);
-
-        objMain.lostPrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.lostPrepareGroup);
-
-        objMain.ambushPrepareGroup = new THREE.Group();
-        objMain.scene.add(objMain.ambushPrepareGroup);
-
-        objMain.waterGroup = new THREE.Group();
-        objMain.scene.add(objMain.waterGroup);
-
-        objMain.fireGroup = new THREE.Group();
-        objMain.scene.add(objMain.fireGroup);
-
-        objMain.lightningGroup = new THREE.Group();
-        objMain.scene.add(objMain.lightningGroup);
-
-        objMain.directionGroup = new THREE.Group();
-        objMain.scene.add(objMain.directionGroup);
-
-        objMain.buildingGroup = new THREE.Group();
-        objMain.scene.add(objMain.buildingGroup);
-
-        objMain.clock = new THREE.Clock();
-
-        {
-            objMain.light1 = new THREE.PointLight(0xffffff);
-            objMain.light1.position.set(-100, 300, -100);
-            objMain.light1.intensity = 2;
-            objMain.scene.add(objMain.light1);
-        }
-
-        {
-            //objMain.controls.minDistance = 3;
-            // objMain.controls.maxPolarAngle = Math.PI;
-            objMain.controls.minPolarAngle = Math.PI / 600;
-            objMain.controls.maxPolarAngle = Math.PI / 2 - Math.PI / 36;
-            objMain.controls.minDistance = 2;
-            objMain.controls.maxDistance = 256;
-        }
-
-        objMain.raycaster = new THREE.Raycaster();
-        objMain.raycaster.linePrecision = 0.2;
-
-        objMain.raycasterOfSelector = new THREE.Raycaster();
-        //objMain.raycasterOfSelector.linePrecision = 100;
-
-        objMain.mouse = new THREE.Vector2();
-
-        //objMain.labelRenderer.domElement.addEventListener
-
-        var operateEnd = function (event) {
-            operatePanel.refresh();
-            return;
-        }
-        var operateStart = function (event) {
-            objMain.canSelect = true;
-            objMain.music.change();
-            objMain.music.MarketRepeat();
-        }
-        objMain.labelRenderer.domElement.addEventListener('mouseup', operateEnd, false);
-        objMain.labelRenderer.domElement.addEventListener('mousedown', operateStart, false);
-
-
-        objMain.labelRenderer.domElement.addEventListener('touchstart', operateStart, false);
-        objMain.labelRenderer.domElement.addEventListener('touchend', operateEnd, false);
-        //scope.domElement.removeEventListener('touchstart', onTouchStart, false);
-        //scope.domElement.removeEventListener('touchend', onTouchEnd, false);
-        //drawCarBtnsFrame();
-        //objNotify.carNotifyShow();
-        window.addEventListener('resize', onWindowResize, false);
-    },
-    change: function () {
-        switch (objMain.state) {
-            case 'LookForBuildings':
-                {
-                    var mainC = document.getElementById('mainC');
-                    mainC.classList.add('small');
-                    objMain.renderer.setSize(300, 300);
-                    objMain.labelRenderer.setSize(300, 300);
-                    objMain.camera.aspect = 1;
-                    objMain.camera.updateProjectionMatrix();
-                }; break;
-            default:
-                {
-                    var mainC = document.getElementById('mainC');
-                    mainC.classList.remove('small');
-                    objMain.labelRenderer.setSize(window.innerWidth, window.innerHeight);
-                    objMain.renderer.setSize(window.innerWidth, window.innerHeight);
-                    objMain.camera.aspect = window.innerWidth / window.innerHeight;
-                    objMain.camera.updateProjectionMatrix();
-                }; break;
-        }
-
-
-    },
-    drawAddr: function (addr) {
-        transactionBussiness().drawAddr(addr);
-        setTransactionHtml.bussinessAddress = addr;
-    },
-    drawAgreementEditor: function () {
-        transactionBussiness().drawAgreementEditor();
-    },
-    drawStockTable: function () {
-        transactionBussiness().drawStockTable();
-    },
-    drawTradeTable: function () {
-        transactionBussiness().drawTradeTable();
-    },
-    originalTable: function () {
-        transactionBussiness().originalTable();
-    },
-    generateAgreement: function () {
-        objMain.ws.send(transactionBussiness().generateAgreement(setTransactionHtml.bussinessAddress));
-    },
-    generateTransactionWithScore: function () {
-        objMain.ws.send(transactionBussiness().generateTransactionWithScore(setTransactionHtml.bussinessAddress));
-    },
-    transSign: function () {
-        objMain.ws.send(transactionBussiness().transSign(setTransactionHtml.bussinessAddress));
-    },
-    transSignWhenTrade: function () {
-        var tradeJson = transactionBussiness().transSignWhenTrade(setTransactionHtml.bussinessAddress);
-        if (tradeJson != null)
-            objMain.ws.send(transactionBussiness().transSignWhenTrade(setTransactionHtml.bussinessAddress));
-    },
-    editRootContainer: function () {
-        transactionBussiness().editRootContainer();
-        //objMain.camera.aspect = 1;
-        //objMain.camera.updateProjectionMatrix();
-        //objMain.labelRenderer.setSize(300, 300);
-        //objMain.renderer.setSize(300, 300);
-    },
-    cancle: function () {
-        transactionBussiness().Cancle();
-        transactionBussiness().notifyMsg(false);
-    },
-    editAgreementPanelWhenTransactionWithScore: function (inputObj) {
-        if (setTransactionHtml.bussinessAddress == inputObj.baseBusinessAddr)
-            transactionBussiness().editAgreementPanelWhenTransactionWithScore(inputObj);
-    },
-    confirmTransaction: function (hasCode) {
-        objMain.ws.send(transactionBussiness().confirmTransaction(hasCode, setTransactionHtml.bussinessAddress));
-    },
-    cancleTransaction: function (hasCode) {
-        objMain.ws.send(transactionBussiness().cancleTransaction(hasCode, setTransactionHtml.bussinessAddress));
-    }
-}
 
 
 
 var set3DHtml = function () {
+    mahjongDisplay.load();
     //var text = "";
     //text += "  <div>";
     //text += "            3D界面";
@@ -4051,6 +2836,7 @@ var set3DHtml = function () {
     objMain.renderer.setPixelRatio(window.devicePixelRatio);
     objMain.renderer.setSize(window.innerWidth, window.innerHeight);
     objMain.renderer.domElement.className = 'renderDom';
+    objMain.renderer.shadowMap.enabled = true;
     document.getElementById('mainC').appendChild(objMain.renderer.domElement);
     //  document.body
 
@@ -4060,12 +2846,12 @@ var set3DHtml = function () {
     //objMain.labelRenderer.domElement.style.curs
     document.getElementById('mainC').appendChild(objMain.labelRenderer.domElement);
 
-    objMain.camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 30000);
-    objMain.camera.position.set(4000, 2000, 0);
-    objMain.camera.position.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 20, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
+    objMain.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 30);
+    objMain.camera.position.set(0.7 + 0.3, 1.25 + 0.3, 0);
+    // objMain.camera.position.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 20, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
 
     objMain.controls = new THREE.OrbitControls(objMain.camera, objMain.labelRenderer.domElement);
-    objMain.controls.center.set(MercatorGetXbyLongitude(objMain.centerPosition.lon), 0, -MercatorGetYbyLatitude(objMain.centerPosition.lat));
+    objMain.controls.center.set(0, 0.8, 0);
 
     {
         var registGroup = function (g) {
@@ -4101,17 +2887,45 @@ var set3DHtml = function () {
         objMain.groupOfTaskCopy = registGroup(objMain.groupOfTaskCopy);
         objMain.marketGroup = registGroup(objMain.marketGroup);
         objMain.crossSelectionsOperator = registGroup(objMain.crossSelectionsOperator);
+        objMain.mahjongsGroup = registGroup(objMain.mahjongsGroup);
+        objMain.diceGroup = registGroup(objMain.diceGroup);
+        objMain.mahjongsOnHandGroup = registGroup(objMain.mahjongsOnHandGroup);
     }
     if (false) {
 
     }
     objMain.clock = new THREE.Clock();
+    const lightIntensity = 0.7;
+    {
+        objMain.light1 = new THREE.PointLight(0xeeeeee);
+        objMain.light1.position.set(4, 4, 4);
+        objMain.light1.intensity = lightIntensity;
+        objMain.light1.castShadow = true;
+        objMain.scene.add(objMain.light1);
+    }
 
     {
-        objMain.light1 = new THREE.PointLight(0xffffff);
-        objMain.light1.position.set(-100, 300, -100);
-        objMain.light1.intensity = 2;
-        objMain.scene.add(objMain.light1);
+        objMain.light2 = new THREE.PointLight(0xeeeeee);
+        objMain.light2.position.set(4, 4, -4);
+        objMain.light2.intensity = lightIntensity;
+        objMain.light2.castShadow = true;
+        objMain.scene.add(objMain.light2);
+    }
+
+    {
+        objMain.light3 = new THREE.PointLight(0xeeeeee);
+        objMain.light3.position.set(-4, 4, -4);
+        objMain.light3.intensity = lightIntensity;
+        objMain.light3.castShadow = true;
+        objMain.scene.add(objMain.light3);
+    }
+
+    {
+        objMain.light4 = new THREE.PointLight(0xeeeeee);
+        objMain.light4.position.set(-4, 4, 4);
+        objMain.light4.intensity = lightIntensity;
+        objMain.light4.castShadow = true;
+        objMain.scene.add(objMain.light4);
     }
 
     {
@@ -4119,8 +2933,9 @@ var set3DHtml = function () {
         // objMain.controls.maxPolarAngle = Math.PI;
         objMain.controls.minPolarAngle = Math.PI / 600;
         objMain.controls.maxPolarAngle = Math.PI / 2 - Math.PI / 36;
-        objMain.controls.minDistance = 2;
-        objMain.controls.maxDistance = 256;
+        objMain.controls.minDistance = 0.2;
+        objMain.controls.maxDistance = 2;
+        objMain.controls.enableZoom = true;
     }
 
     objMain.raycaster = new THREE.Raycaster();
@@ -4134,90 +2949,7 @@ var set3DHtml = function () {
     //objMain.labelRenderer.domElement.addEventListener
 
     var operateEnd = function (event) {
-
-        if (event.clientX != undefined && event.clientX != null) {
-            //此处对应鼠标
-            objMain.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            objMain.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-            lookInfoForCar();
-        }
-        else if (event.changedTouches && event.changedTouches.length > 0) {
-            // 获取第一个触摸点。这个对应手机触摸屏。
-            var touch = event.changedTouches[0];
-            objMain.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
-            objMain.mouse.y = - (touch.clientY / window.innerHeight) * 2 + 1;
-            lookInfoForCar();
-        }
-
-
-        operatePanel.refresh();
-
-        if (objMain.directionGroup.visible) {
-            var minAngle = Math.PI / 20;
-            var selectIndex = -1;
-            for (var i = 1; i < objMain.directionGroup.children.length; i++) {
-                // objMain.directionGroup.children[i].children[0].material = objMain.ModelInput.directionArrow.oldM;
-                var delta = (objMain.directionGroup.children[i].rotation.y - (objMain.controls.getAzimuthalAngle() + Math.PI / 2) + Math.PI * 4) % (Math.PI * 2);
-                if (delta < minAngle) {
-                    minAngle = delta;
-                    selectIndex = i;
-                }
-                else {
-                    continue;
-                }
-            }
-            if (objMain.selection.isZooming) {
-                objMain.selection.isZooming = false;
-            }
-            else if (selectIndex > 0) {
-                if (objMain.selection.first == selectIndex) {
-                    var rotationY = objMain.directionGroup.children[selectIndex].rotation.y;
-                    if (objMain.directionGroup.children[selectIndex].userData.objState > 0) {
-                    }
-                    else {
-                        var json = JSON.stringify({ c: 'ViewAngle', 'rotationY': rotationY, 'postionCrossKey': objMain.directionGroup.children[selectIndex].userData.postionCrossKey, 'uid': '' });
-                        objMain.ws.send(json);
-                        //userData.objState
-                        objMain.directionGroup.children[selectIndex].userData.objState = 1;
-                        objMain.selection.initialize();
-                        switch (selectIndex) {
-                            case 1: { objMain.jscwObj.play('A'); }; break;
-                            case 2: { objMain.jscwObj.play('B'); }; break;
-                            case 3: { objMain.jscwObj.play('C'); }; break;
-                        }
-                        objMain.targetMusic.change();
-
-                        setTimeout(() => {
-                            objMain.targetMusic.change('pass');
-                        }, 3000);
-                    }
-                }
-                else {
-                    objMain.selection.first = selectIndex;
-                    switch (selectIndex) {
-                        case 1: {
-                            //$.notify('再次点击选择A', 'msg');
-                            currentSelectionPreparationShow.updateFrequency('确认选A');
-                            operateStateShow.update('请再点击');
-                        }; break;
-                        case 2: {
-                            //$.notify('再次点击选择B', 'msg');
-                            currentSelectionPreparationShow.updateFrequency('确认选B');
-                            operateStateShow.update('请再点击');
-                        }; break;
-                        case 3: {
-                            //$.notify('再次点击选择C', 'msg');
-                            currentSelectionPreparationShow.updateFrequency('确认选C');
-                            operateStateShow.update('请再点击');
-                        }; break;
-                    }
-
-                }
-
-                operatePanel.refresh();
-            }
-        }
-        //objMain.ws
+        //  objMain.camera.lookAt(0, 0.8, 0);
         return;
     }
     var operateStart = function (event) {
@@ -4231,6 +2963,7 @@ var set3DHtml = function () {
 
     objMain.labelRenderer.domElement.addEventListener('touchstart', operateStart, false);
     objMain.labelRenderer.domElement.addEventListener('touchend', operateEnd, false);
+
     //scope.domElement.removeEventListener('touchstart', onTouchStart, false);
     //scope.domElement.removeEventListener('touchend', onTouchEnd, false);
     //drawCarBtnsFrame();
@@ -4238,6 +2971,8 @@ var set3DHtml = function () {
     window.addEventListener('resize', onWindowResize, false);
     douyinPanleShow.drawFlagThemeDetail('Ukraine');
     douyinPanleShow.drawFlagThemeDetail('Russia');
+    showDesk();
+    objMain.camera.lookAt(0, 0.8, 0);
 }
 function onWindowResize() {
     switch (objMain.state) {
@@ -5615,6 +4350,226 @@ var operatePanel =
         }
     }
 };
+
+var selectPosition = {
+    clearPanel: function () {
+        while (document.getElementById('taskOperatingPanel') != null) {
+            document.getElementById('taskOperatingPanel').remove();
+        }
+    },
+    refresh: function () {
+
+        selectPosition.clearPanel();
+        var divTaskOperatingPanel = document.createElement('div');
+        divTaskOperatingPanel.id = 'taskOperatingPanel';
+
+        divTaskOperatingPanel.style.position = 'absolute';
+        divTaskOperatingPanel.style.zIndex = '7';
+        divTaskOperatingPanel.style.right = '20px';
+        divTaskOperatingPanel.style.border = 'none';
+        divTaskOperatingPanel.style.width = '5em';
+        divTaskOperatingPanel.style.color = 'green';
+        //根据底部计算所得
+        divTaskOperatingPanel.style.bottom = 'calc(2.5em + 14px)';
+
+        var addItemToTaskOperatingPanle2 = function (bgRc, id, clickF, objState) {
+            var div = document.createElement('div');
+            div.style.width = 'calc(5em - 4px)';
+            div.style.textAlign = 'center';
+            div.style.border = '2px inset #ffc403';
+            div.style.borderRadius = '0.3em';
+            div.style.marginTop = '4px';
+            div.style.marginBottom = '4px';
+            div.style.background = 'rgba(0, 191, 255, 0.6)';
+            div.style.height = 'calc(3.09em - 2.47px)';
+
+            switch (objState) {
+                case 0:
+                    {
+                        div.style.backgroundImage = 'url("' + bgRc + '")';
+                        div.onclick = function () {
+                            clickF();
+                        }
+                    }; break;
+                case 1:
+                    {
+                        div.style.backgroundImage = '';
+                    }; break;
+                case 2:
+                    {
+                        div.style.backgroundImage = 'url("Pic/crossimg/wrong.png")';
+                    }; break;
+            }
+            //if (objHasBeenSelected) {
+            //    div.style.backgroundImage = 'url("Pic/crossimg/wrong.png")';
+            //}
+            //else {
+
+            //}
+            div.style.backgroundSize = 'auto calc(1.5em - 1.2px)';
+            div.style.backgroundPosition = 'center center';
+            div.style.backgroundRepeat = 'no-repeat';
+            div.id = id;
+            //if (objHasBeenSelected) {
+            //}
+            //else {
+
+            //}
+
+            div.classList.add('costomButton');
+            divTaskOperatingPanel.appendChild(div);
+        }
+        document.body.appendChild(divTaskOperatingPanel);
+
+        addItemToTaskOperatingPanle2('Pic/crossimg/east.png', 'selectEast', function () {
+            objMain.ws.send(JSON.stringify({ c: 'PositionSelect', Position: 'east' }));
+        }, 0);
+        addItemToTaskOperatingPanle2('Pic/crossimg/south.png', 'selectSouth', function () {
+            objMain.ws.send(JSON.stringify({ c: 'PositionSelect', Position: 'south' }));
+        }, 0);
+        addItemToTaskOperatingPanle2('Pic/crossimg/west.png', 'selectWest', function () {
+            objMain.ws.send(JSON.stringify({ c: 'PositionSelect', Position: 'west' }));
+        }, 0);
+        addItemToTaskOperatingPanle2('Pic/crossimg/north.png', 'selectNorth', function () {
+            objMain.ws.send(JSON.stringify({ c: 'PositionSelect', Position: 'north' }));
+        }, 0);
+    },
+    refresh2: function () {
+
+        selectPosition.clearPanel();
+        var divTaskOperatingPanel = document.createElement('div');
+        divTaskOperatingPanel.id = 'taskOperatingPanel';
+
+        divTaskOperatingPanel.style.position = 'absolute';
+        divTaskOperatingPanel.style.zIndex = '7';
+        divTaskOperatingPanel.style.right = '20px';
+        divTaskOperatingPanel.style.border = 'none';
+        divTaskOperatingPanel.style.width = '5em';
+        divTaskOperatingPanel.style.color = 'green';
+        //根据底部计算所得
+        divTaskOperatingPanel.style.bottom = 'calc(2.5em + 14px)';
+
+        var addItemToTaskOperatingPanle2 = function (bgRc, id, clickF, objState) {
+            var div = document.createElement('div');
+            div.style.width = 'calc(5em - 4px)';
+            div.style.textAlign = 'center';
+            div.style.border = '2px inset #ffc403';
+            div.style.borderRadius = '0.3em';
+            div.style.marginTop = '4px';
+            div.style.marginBottom = '4px';
+            div.style.background = 'rgba(0, 191, 255, 0.6)';
+            div.style.height = 'calc(3.09em - 2.47px)';
+
+            switch (objState) {
+                case 0:
+                    {
+                        div.style.backgroundImage = 'url("' + bgRc + '")';
+                        div.onclick = function () {
+                            clickF();
+                        }
+                    }; break;
+                case 1:
+                    {
+                        div.style.backgroundImage = '';
+                    }; break;
+                case 2:
+                    {
+                        div.style.backgroundImage = 'url("Pic/crossimg/wrong.png")';
+                    }; break;
+            }
+            //if (objHasBeenSelected) {
+            //    div.style.backgroundImage = 'url("Pic/crossimg/wrong.png")';
+            //}
+            //else {
+
+            //}
+            div.style.backgroundSize = 'auto calc(1.5em - 1.2px)';
+            div.style.backgroundPosition = 'center center';
+            div.style.backgroundRepeat = 'no-repeat';
+            div.id = id;
+            //if (objHasBeenSelected) {
+            //}
+            //else {
+
+            //}
+
+            div.classList.add('costomButton');
+            divTaskOperatingPanel.appendChild(div);
+        }
+        document.body.appendChild(divTaskOperatingPanel);
+
+        addItemToTaskOperatingPanle2('Pic/crossimg/east.png', 'startPositionSelect', function () {
+            objMain.ws.send(JSON.stringify({ c: 'StartPositionSelect' }));
+            objMain.diceRotating = true;
+        }, 0);
+    }
+
+    //return this;
+}
+
+var diceDisplay =
+{
+    showValue: function (v1, v2, v3, v4) {
+        if (v3 + v4 == 0) { }
+        else {
+            v1 = v3;
+            v2 = v4;
+        }
+        switch (v1) {
+            case 1:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(-Math.PI / 2, 0, 0, 'XYZ');
+                }; break;
+            case 2:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(0, 0, Math.PI / 2, 'XYZ');
+                }; break;
+            case 3:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(-Math.PI, 0, 0, 'XYZ');
+                }; break;
+            case 4:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(0, 0, 0, 'XYZ');
+                }; break;
+            case 5:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(0, 0, -Math.PI / 2, 'XYZ');
+                }; break;
+            case 6:
+                {
+                    objMain.diceGroup.getObjectByName('dice1').rotation.set(Math.PI / 2, 0, 0, 'XYZ');
+                }; break;
+        }
+        switch (v2) {
+            case 1:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(-Math.PI / 2, 0, 0, 'XYZ');
+                }; break;
+            case 2:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(0, 0, Math.PI / 2, 'XYZ');
+                }; break;
+            case 3:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(-Math.PI, 0, 0, 'XYZ');
+                }; break;
+            case 4:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(0, 0, 0, 'XYZ');
+                }; break;
+            case 5:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(0, 0, -Math.PI / 2, 'XYZ');
+                }; break;
+            case 6:
+                {
+                    objMain.diceGroup.getObjectByName('dice2').rotation.set(Math.PI / 2, 0, 0, 'XYZ');
+                }; break;
+        }
+    }
+}
+
 var ModelOperateF =
 {
     f: function (received_obj, config) {
@@ -5689,1347 +4644,8 @@ var ModelOperateF =
     }
 };
 
-var stateSet =
-{
-    speed:
-    {
-        add: function (carId) {
-            for (var i = 0; i < 2; i++) {
-                var meshCopy = objMain.ModelInput.speed.children[0].clone();
-                meshCopy.name = 'fire' + i.toString() + '_' + carId;
-                meshCopy.position.x = 77;//97.11
-                meshCopy.position.z = 4 - i * 18;
-                meshCopy.rotateY(Math.PI / 2 * 3);
-                meshCopy.scale.z = 2;//3
-                var car = objMain.carGroup.getObjectByName('car_' + carId);
-                if (car)
-                    if (!car.getObjectByName(meshCopy.name))
-                        car.add(meshCopy);
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car)
-                for (var i = 0; i < 2; i++) {
-                    var name = 'fire' + i.toString() + '_' + carId;
-                    var fire = car.getObjectByName(name);
-                    if (fire) {
-                        var percent = (Date.now() % 500) / 500;
-                        fire.position.x = 77 + (97.11 - 77) * percent;
-                        fire.scale.z = 2 + (3 - 2) * percent;//3
-                    }
-                }
-        },
-        clear: function (carId) {
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car)
-                for (var i = 0; i < 2; i++) {
-                    var name = 'fire' + i.toString() + '_' + carId;
-                    var fire = car.getObjectByName(name);
-                    if (fire) {
-                        car.remove(fire);
-                    }
-                }
-        },
-        selfHasFire: function () {
-            var car = objMain.carGroup.getObjectByName('car_' + objMain.indexKey);
-            var fire0 = car.getObjectByName('fire0_' + objMain.indexKey);
-            if (fire0 == undefined || fire == null) {
-                return false;
-            }
-            else return true;
-        }
-    },
-    attck:
-    {
-        add: function (carId) {
-            {
-                var meshCopy = objMain.ModelInput.attack.children[0].clone();
-                meshCopy.name = 'fist_' + carId;
-                meshCopy.position.x = -0;//97.11
-                meshCopy.position.y = -30;
-                meshCopy.position.z = 0;
-                meshCopy.rotateX(Math.PI / 2);
-                meshCopy.rotateY(Math.PI);
-                meshCopy.scale.set(5, 5, 5);// = 2;//3
-                var car = objMain.carGroup.getObjectByName('car_' + carId);
-                if (car)
-                    if (!car.getObjectByName(meshCopy.name))
-                        car.add(meshCopy);
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'fist_' + carId;
-                var fist = car.getObjectByName(name);
-                if (fist) {
-                    var percent = (Date.now() % 500) / 500;
-                    if (percent < 0.3) {
-                        percent = percent / 0.3;
-                    }
-                    else {
-                        percent = (1 - percent) / 0.7;
-                    }
-                    fist.position.x = -40 + (-35 - (-40)) * percent;
-                }
-            }
-        },
-        clear: function (carId) {
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'fist_' + carId;
-                var fist = car.getObjectByName(name);
-                if (fist) {
-                    car.remove(fist);
-                }
-            }
-        },
-    },
-    defend:
-    {
-        add: function (carId) {
-            {
-                var flag = objMain.playerGroup.getObjectByName('flag_' + carId);
-                if (flag) {
-                    var O3d = new THREE.Object3D();
-                    O3d.name = 'defender_' + carId;
-                    O3d.position.set(flag.position.x, flag.position.y, flag.position.z);
 
-                    for (var i = 0; i < 3; i++) {
-                        var meshCopy = objMain.ModelInput.shield.children[0].clone();
-                        meshCopy.name = 'shield' + i.toString() + '_' + carId;
-                        meshCopy.position.x = 0.8 * Math.cos(i * 2 * Math.PI / 3);//97.11
-                        meshCopy.position.y = 0.5;
-                        meshCopy.position.z = 0.8 * Math.sin(i * 2 * Math.PI / 3);
-                        meshCopy.scale.set(0.003, 0.003, 0.003);
-                        meshCopy.rotateX(Math.PI / 2);
-                        meshCopy.rotateZ(-Math.PI / 2 + i * 2 * Math.PI / 3);
-                        O3d.add(meshCopy);
-                    }
-                    if (!objMain.shieldGroup.getObjectByName(O3d.name))
-                        objMain.shieldGroup.add(O3d);
-                }
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var O3dname = 'defender_' + carId;
 
-            var O3d = objMain.shieldGroup.getObjectByName(O3dname);
-            if (O3d) {
-                O3d.rotation.y = (Math.sin((Date.now() % 2000) / 2000 * Math.PI * 2) + 1) * Math.PI;
-            }
-        },
-        clear: function (carId) {
-            var O3dname = 'defender_' + carId;
-            var O3d = objMain.shieldGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var length = O3d.children.length;
-                for (var i = length - 1; i >= 0; i--) {
-                    O3d.remove(O3d.children[i]);
-                }
-                objMain.shieldGroup.remove(O3d);
-            }
-        }
-    },
-    confusePrepare:
-    {
-        add: function (carId, animateData) {
-            {
-                //if (flag)
-                // var animateData = { startX: objMain.controls.target.x, startY: objMain.controls.target.y, startZ: objMain.controls.target.z, start: Date.now(), endX: objMain.controls.target.x + 5, endY: objMain.controls.target.y, endZ: objMain.controls.target.z }
-                {
-                    var O3d = new THREE.Object3D();
-                    O3d.name = 'confusePrepare_' + carId;
-                    O3d.position.set(animateData.startX, animateData.startY, animateData.startZ);
-
-                    {
-                        var meshCopy = objMain.ModelInput.confusePrepare.children[0].clone();
-                        meshCopy.name = 'confusePrepareChild_' + carId;
-                        meshCopy.position.x = 0;//97.11
-                        meshCopy.position.y = 0;
-                        meshCopy.position.z = 0;
-                        meshCopy.scale.set(0.05, 0.05, 0.05);
-                        meshCopy.rotateX(Math.PI / 2);
-                        //meshCopy.rotateZ(-Math.PI / 2 + i * 2 * Math.PI / 3);
-                        O3d.add(meshCopy);
-                    }
-                    O3d.userData.animateData = animateData;
-                    if (!objMain.confusePrepareGroup.getObjectByName(O3d.name))
-                        objMain.confusePrepareGroup.add(O3d);
-                }
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var O3dname = 'confusePrepare_' + carId;
-
-            var O3d = objMain.confusePrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var userData = O3d.userData.animateData;
-                var percent = ((Date.now() - userData.start) % 3000) / 3000;
-                var positionX = userData.startX + percent * (userData.endX - userData.startX);
-                var positionY = userData.startY + percent * (userData.endY - userData.startY);
-                var positionZ = userData.startZ + percent * (userData.endZ - userData.startZ);
-                O3d.position.set(positionX, positionY, positionZ);
-
-                O3d.children[0].position.set(0.1 * Math.sin(percent * 20), 0.06 * Math.sin(percent * 10), 0.08 * Math.sin(percent * 15));
-                O3d.children[0].rotation.set((percent * 1.7 % 1) * Math.PI * 2, (percent * 1.1 % 1) * Math.PI * 2, (percent * 1.3 % 1) * Math.PI * 2)
-
-            }
-        },
-        clear: function (carId) {
-            var O3dname = 'confusePrepare_' + carId;
-            var O3d = objMain.confusePrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var length = O3d.children.length;
-                for (var i = length - 1; i >= 0; i--) {
-                    O3d.remove(O3d.children[i]);
-                }
-                objMain.confusePrepareGroup.remove(O3d);
-            }
-        }
-    },
-    confuse:
-    {
-        add: function (carId) {
-            var meshCopy = objMain.ModelInput.confusePrepare.children[0].clone();
-            meshCopy.name = 'confuse' + '_' + carId;
-            meshCopy.position.y = 18;
-            meshCopy.scale.set(5, 5, 5);
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car)
-                if (!car.getObjectByName(meshCopy.name))
-                    car.add(meshCopy);
-        },
-        Animate: function (carId) {
-            //input Is group
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'confuse' + '_' + carId;
-                var confuseTag = car.getObjectByName(name);
-                if (confuseTag) {
-                    var t = (Date.now() % 1500 - 750) / 750;
-                    var deltaT = (Date.now() % 10000) / 10000;
-                    confuseTag.rotation.set(0, Math.abs(t * Math.PI) + deltaT * 2 * Math.PI, 0, 'XYZ')
-                }
-            }
-        },
-        clear: function (carId) {
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'confuse' + '_' + carId;
-                var confuseTag = car.getObjectByName(name);
-                if (confuseTag) {
-                    car.remove(confuseTag);
-                }
-            }
-        }
-    },
-    lostPrepare:
-    {
-        add: function (carId, animateData) {
-            {
-                //if (flag)
-                // var animateData = { startX: objMain.controls.target.x, startY: objMain.controls.target.y, startZ: objMain.controls.target.z, start: Date.now(), endX: objMain.controls.target.x + 5, endY: objMain.controls.target.y, endZ: objMain.controls.target.z }
-                {
-                    var O3d = new THREE.Object3D();
-                    O3d.name = 'lostPrepare_' + carId;
-                    O3d.position.set(animateData.startX, animateData.startY, animateData.startZ);
-
-                    {
-                        var meshCopy = objMain.ModelInput.lostPrepare.children[0].clone();
-                        meshCopy.name = 'lostPrepareChild_' + carId;
-                        meshCopy.position.x = 0;//97.11
-                        meshCopy.position.y = 0;
-                        meshCopy.position.z = 0.0;
-                        meshCopy.scale.set(0.015, 0.015, 0.015);
-                        //meshCopy.rotateX(Math.PI / 2);
-                        meshCopy.rotateZ(Math.PI / 2);
-                        //meshCopy.rotateZ(-Math.PI / 2 + i * 2 * Math.PI / 3);
-                        O3d.add(meshCopy);
-                    }
-                    O3d.userData.animateData = animateData;
-                    if (!objMain.lostPrepareGroup.getObjectByName(O3d.name))
-                        objMain.lostPrepareGroup.add(O3d);
-                }
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var O3dname = 'lostPrepare_' + carId;
-
-            var O3d = objMain.lostPrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var userData = O3d.userData.animateData;
-                var percent = ((Date.now() - userData.start) % 3000) / 3000;
-                var positionX = userData.startX + percent * (userData.endX - userData.startX);
-                var positionY = userData.startY + percent * (userData.endY - userData.startY);
-                var positionZ = userData.startZ + percent * (userData.endZ - userData.startZ);
-                O3d.position.set(positionX, positionY, positionZ);
-
-                //O3d.children[0].position.set(0.1 * Math.sin(percent * 20), 0.06 * Math.sin(percent * 10), 0.08 * Math.sin(percent * 15));
-                O3d.children[0].rotation.set((percent * 2 % 1) * Math.PI * 2, 0, Math.PI / 2)
-
-            }
-        },
-        clear: function (carId) {
-            var O3dname = 'lostPrepare_' + carId;
-            var O3d = objMain.lostPrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var length = O3d.children.length;
-                for (var i = length - 1; i >= 0; i--) {
-                    O3d.remove(O3d.children[i]);
-                }
-                objMain.lostPrepareGroup.remove(O3d);
-            }
-        }
-    },
-    lost:
-    {
-        add: function (carId) {
-            var meshCopy = objMain.ModelInput.lostPrepare.children[0].clone();
-            meshCopy.name = 'lost' + '_' + carId;
-            meshCopy.position.y = 35;
-            meshCopy.scale.set(1, 1, 1);
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car)
-                if (!car.getObjectByName(meshCopy.name))
-                    car.add(meshCopy);
-        },
-        Animate: function (carId) {
-            //input Is group
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'lost' + '_' + carId;;
-                var loseTag = car.getObjectByName(name);
-                if (loseTag) {
-                    var t = (Date.now() % 2500) / 2500;
-                    loseTag.rotation.set(0, t * 2 * Math.PI, 0, 'XYZ');
-                }
-            }
-        },
-        clear: function (carId) {
-            var car = objMain.carGroup.getObjectByName('car_' + carId);
-            if (car) {
-                var name = 'lost' + '_' + carId;;
-                var loseTag = car.getObjectByName(name);
-                if (loseTag) {
-                    car.remove(loseTag);
-                }
-            }
-        }
-    },
-    ambusePrepare:
-    {
-        add: function (carId, animateData) {
-            {
-                //if (flag)
-                // var animateData = { startX: objMain.controls.target.x, startY: objMain.controls.target.y, startZ: objMain.controls.target.z, start: Date.now(), endX: objMain.controls.target.x + 5, endY: objMain.controls.target.y, endZ: objMain.controls.target.z }
-                {
-                    var O3d = new THREE.Object3D();
-                    O3d.name = 'ambusePrepare_' + carId;
-                    O3d.position.set(animateData.startX, animateData.startY, animateData.startZ);
-
-                    {
-                        var meshCopy = objMain.ModelInput.ambushPrepare.children[0].clone();
-                        meshCopy.name = 'ambusePrepareChild_' + carId;
-                        meshCopy.position.x = 0;//97.11
-                        meshCopy.position.y = 0;
-                        meshCopy.position.z = 0;
-                        meshCopy.scale.set(0.005, 0.005, 0.005);
-                        //meshCopy.rotateX(Math.PI / 2);
-                        //meshCopy.rotateZ(-Math.PI / 2 + i * 2 * Math.PI / 3);
-                        O3d.add(meshCopy);
-                    }
-                    O3d.userData.animateData = animateData;
-                    if (!objMain.ambushPrepareGroup.getObjectByName(O3d.name)) {
-                        objMain.ambushPrepareGroup.add(O3d);
-                    }
-                }
-            }
-        },
-        Animate: function (carId) {
-            //input Is group
-            var O3dname = 'ambusePrepare_' + carId;
-
-            var O3d = objMain.ambushPrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var userData = O3d.userData.animateData;
-                var percent = ((Date.now() - userData.start) % 3000) / 3000;
-                var positionX = userData.startX + percent * (userData.endX - userData.startX);
-                var positionY = userData.startY + percent * (userData.endY - userData.startY);
-                var positionZ = userData.startZ + percent * (userData.endZ - userData.startZ);
-                O3d.position.set(positionX, positionY, positionZ);
-
-                // O3d.children[0].position.set(0.1 * Math.sin(percent * 20), 0.06 * Math.sin(percent * 10), 0.08 * Math.sin(percent * 15));
-                //O3d.children[0].rotation.set((percent * 1.7 % 1) * Math.PI * 2, (percent * 1.1 % 1) * Math.PI * 2, (percent * 1.3 % 1) * Math.PI * 2)
-
-            }
-        },
-        clear: function (carId) {
-            var O3dname = 'ambusePrepare_' + carId;
-            var O3d = objMain.ambushPrepareGroup.getObjectByName(O3dname);
-            if (O3d) {
-                var length = O3d.children.length;
-                for (var i = length - 1; i >= 0; i--) {
-                    O3d.remove(O3d.children[i]);
-                }
-                objMain.ambushPrepareGroup.remove(O3d);
-            }
-            //var car = objMain.carGroup.getObjectByName('car_' + carId);
-            //if (car) {
-            //    var name = 'fist_' + carId;
-            //    var fist = car.getObjectByName(name);
-            //    if (fist) {
-            //        car.remove(fist);
-            //    }
-            //}
-        }
-    },
-    control:
-    {
-        clear: function (carId) {
-            stateSet.confusePrepare.clear(carId);
-            stateSet.lostPrepare.clear(carId);
-            stateSet.ambusePrepare.clear(carId);
-        }
-    },
-    water:
-    {
-        add: function (targetRoleID, actionRole) {
-            {
-                this.clear(actionRole);
-                let targetCar = objMain.carGroup.getObjectByName('car_' + targetRoleID);
-                if (targetCar) {
-                    //lightningStrikeMesh.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                    //lightningStrikeMesh.userData = { startT: Date.now(), targetRoleID: targetRoleID };
-                    //objMain.lightningGroup.add(lightningStrikeMesh);
-                    //particleFireMesh1.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                    //particleFireMesh1.name = 'fire_' + actionRole;
-                    //particleFireMesh1.userData = { startT: Date.now(), targetRoleID: targetRoleID };
-                    //objMain.fireGroup.add(particleFireMesh1);
-                }
-
-                var flag = objMain.playerGroup.getObjectByName('flag_' + targetRoleID);
-                if (flag) {
-                    //var O3d = new THREE.Object3D();
-
-                    // O3d.position.set(flag.position.x, flag.position.y, flag.position.z);
-                    var waterCopy = objMain.ModelInput.water.clone();
-
-                    for (var i = 0; i < waterCopy.children.length; i++) {
-                        waterCopy.children[i].material.transparent = true;
-                        waterCopy.children[i].material.opacity = 0.6;
-                    }
-                    waterCopy.name = 'water_' + actionRole;
-                    waterCopy.position.set(flag.position.x, flag.position.y, flag.position.z);
-                    waterCopy.scale.set(0.15, 0.5, 0.15);
-                    waterCopy.userData = { startT: Date.now() };
-                    objMain.waterGroup.add(waterCopy);
-                }
-            }
-        },
-        Animate: function (actionRole) {
-            var name = 'water_' + actionRole;
-            var water = objMain.waterGroup.getObjectByName(name);
-            if (water) {
-                var percent = (Date.now() - water.userData.startT) / 10000;
-                if (percent < 1) {
-                    //var secondPercent = 
-                    var shuilang = water.getObjectByName('shuilang');
-                    shuilang.scale.set(1, 1 - percent, 1);
-                    var shuizhu = water.getObjectByName('shuizhu');
-                    shuizhu.scale.set(1 + Math.pow(percent * 10, 0.66), 1, 1 + Math.pow(percent * 10, 0.66));
-                }
-                else {
-                    objMain.waterGroup.remove(water);
-                }
-            }
-        },
-        clear: function (actionRole) {
-            var name = 'water_' + actionRole;
-            var water = objMain.waterGroup.getObjectByName(name);
-            if (water) {
-                objMain.waterGroup.remove(water);
-            }
-        },
-        mark:
-        {
-            material: new THREE.LineBasicMaterial({ color: 0x0000ff }),
-            add: function (pointsArray) {
-                //  this.clear(actionRole);
-                const points = [];
-                points.push(new THREE.Vector3(pointsArray[0], 0, -pointsArray[1]));
-                points.push(new THREE.Vector3(pointsArray[2], 0, -pointsArray[3]));
-                points.push(new THREE.Vector3(pointsArray[4], 0, -pointsArray[5]));
-                var geometry = new THREE.BufferGeometry().setFromPoints(points);
-                var line = new THREE.Line(geometry, this.material);
-                line.userData = { startT: Date.now() };
-                objMain.waterMarkGroup.add(line);
-            },
-            Animate: function () {
-                if (Date.now() % 1000 > 500) {
-                    this.material.color.r = 0;
-                    this.material.color.g = 1;
-                    this.material.color.b = 0.45;
-                }
-                else {
-                    this.material.color.r = 0.1;
-                    this.material.color.g = 0.45;
-                    this.material.color.b = 1;
-                }
-                var group = objMain.waterMarkGroup;
-                var startIndex = group.children.length - 1;
-                for (var i = startIndex; i >= 0; i--) {
-                    if (Date.now() - group.children[i].userData.startT > 20000)
-                        group.remove(group.children[i]);
-                }
-            }
-        }
-    },
-    fire:
-    {
-        particleCount: 400,
-        add: function (targetRoleID, actionRole) {
-            this.clear(actionRole);
-            var particleFire = new fire();
-            particleFire.install({ THREE: THREE });
-
-            var geometry1 = new particleFire.Geometry(10, 35, this.particleCount);
-            var material1 = new particleFire.Material({ color: 0x800080 });
-            var height = window.innerHeight;
-            material1.setPerspective(objMain.camera.fov, height);
-            var particleFireMesh1 = new THREE.Points(geometry1, material1);
-
-            let targetCar = objMain.carGroup.getObjectByName('car_' + targetRoleID);
-            if (targetCar) {
-                //lightningStrikeMesh.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                //lightningStrikeMesh.userData = { startT: Date.now(), targetRoleID: targetRoleID };
-                //objMain.lightningGroup.add(lightningStrikeMesh);
-                particleFireMesh1.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                particleFireMesh1.name = 'fire_' + actionRole;
-                particleFireMesh1.userData = { startT: Date.now(), targetRoleID: targetRoleID };
-                objMain.fireGroup.add(particleFireMesh1);
-            }
-            if (false) {
-                var flag = objMain.playerGroup.getObjectByName('flag_' + targetRoleID);
-                if (flag) {
-                    //  mesh.position.set(flag.position.x, 0, flag.position.z);
-                    particleFireMesh1.position.set(flag.position.x, flag.position.y, flag.position.z);
-                    particleFireMesh1.name = 'fire_' + actionRole;
-                    particleFireMesh1.userData = { startT: Date.now() };
-                    objMain.fireGroup.add(particleFireMesh1);
-                }
-            }
-        },
-        Animate: function (actionRole) {
-            var name = 'fire_' + actionRole;
-            var fire = objMain.fireGroup.getObjectByName(name);
-            if (fire) {
-                fire.material.update(Date.now() % 2000 / 2000 * 20);
-                //particleFireMesh1.material.update(delta);
-                //particleFireMesh2.material.update(delta);
-                var percent = (Date.now() - fire.userData.startT) / 10000;
-                if (percent < 1) {
-                    var car = objMain.carGroup.getObjectByName('car_' + actionRole);
-                    if (car) {
-                        var deltaX = car.position.x - fire.position.x;
-                        var deltaZ = car.position.z - fire.position.z;
-
-                        for (let i = this.particleCount - this.particleCount / 4; i < this.particleCount; i++) {
-                            var positionPercent = (i - (this.particleCount - this.particleCount / 4)) / (this.particleCount / 4);
-
-                            fire.geometry.attributes.position.array[i * 3 + 0] = positionPercent * deltaX;
-                            fire.geometry.attributes.position.array[i * 3 + 1] = (positionPercent * positionPercent - positionPercent) * -100;
-                            fire.geometry.attributes.position.array[i * 3 + 2] = positionPercent * deltaZ;
-
-                        }
-                        fire.geometry.attributes.position.needsUpdate = true;
-
-                        var targetRoleID = fire.userData.targetRoleID;
-                        let targetCar = objMain.carGroup.getObjectByName('car_' + targetRoleID);
-                        if (targetCar) {
-                            fire.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                        }
-                    }
-                }
-                else {
-                    fire.material.dispose();
-                    fire.geometry.dispose();
-                    objMain.fireGroup.remove(fire);
-                }
-            }
-        },
-        clear: function (actionRole) {
-            var name = 'fire_' + actionRole;
-            var fire = objMain.fireGroup.getObjectByName(name);
-            if (fire) {
-                fire.material.dispose();
-                fire.geometry.dispose();
-                objMain.fireGroup.remove(fire);
-            }
-        },
-        mark:
-        {
-            material: new THREE.LineBasicMaterial({ color: 0x090f10 }),
-            add: function (pointsArray) {
-                //  this.clear(actionRole);
-                const points = [];
-                for (var i = 0; i < pointsArray.length; i += 2) {
-                    points.push(new THREE.Vector3(pointsArray[i], 0, -pointsArray[i + 1]));
-                }
-                var geometry = new THREE.BufferGeometry().setFromPoints(points);
-                var line = new THREE.Line(geometry, this.material);
-                line.userData = { startT: Date.now() };
-                objMain.fireMarkGroup.add(line);
-            },
-            Animate: function () {
-                if (Date.now() % 1000 > 500) {
-                    this.material.color.r = 2;
-                    this.material.color.g = 0.4;
-                    this.material.color.b = 0.3;
-                }
-                else {
-                    this.material.color.r = 1.2;
-                    this.material.color.g = 1.2;
-                    this.material.color.b = 0.3;
-                }
-                var group = objMain.fireMarkGroup;
-                var startIndex = group.children.length - 1;
-                for (var i = startIndex; i >= 0; i--) {
-                    if (Date.now() - group.children[i].userData.startT > 20000)
-                        group.remove(group.children[i]);
-
-                }
-            }
-        }
-    },
-    lightning:
-    {
-        add: function (targetRoleID, actionRole) {
-            this.clear(actionRole);
-            let rayParams = {
-
-                sourceOffset: new THREE.Vector3(),
-                destOffset: new THREE.Vector3(),
-                radius0: 0.07,
-                radius1: 0.08,
-                minRadius: 0.05,
-                maxIterations: 7,
-                isEternal: true,
-
-                timeScale: 0.7,
-
-                propagationTimeFactor: 0.05,
-                vanishingTimeFactor: 0.95,
-                subrayPeriod: 3.5,
-                subrayDutyCycle: 0.6,
-                maxSubrayRecursion: 3,
-                ramification: 7,
-                recursionProbability: 0.6,
-
-                roughness: 0.85,
-                straightness: 0.8
-
-            };
-            let lightningStrike = new THREE.LightningStrike(rayParams);
-
-            // r=176 g=15 b=254
-            let lightningMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xb0fffe) });
-            let lightningStrikeMesh = new THREE.Mesh(lightningStrike, lightningMaterial);
-            lightningStrikeMesh.name = 'lightning_' + actionRole;
-
-            //let flag = objMain.playerGroup.getObjectByName('flag_' + targetRoleID);
-            //if (flag) {
-            //    lightningStrikeMesh.position.set(flag.position.x, flag.position.y, flag.position.z);
-            //    lightningStrikeMesh.userData = { startT: Date.now() };
-            //    objMain.lightningGroup.add(lightningStrikeMesh);
-            //}
-            let targetCar = objMain.carGroup.getObjectByName('car_' + targetRoleID);
-            if (targetCar) {
-                lightningStrikeMesh.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                lightningStrikeMesh.userData = { startT: Date.now(), targetRoleID: targetRoleID };
-                objMain.lightningGroup.add(lightningStrikeMesh);
-            }
-        },
-        Animate: function (actionRole) {
-            let name = 'lightning_' + actionRole;
-            var lightningStrikeMesh = objMain.lightningGroup.getObjectByName(name);
-            if (lightningStrikeMesh) {
-                var percent = (Date.now() - lightningStrikeMesh.userData.startT) / 15000;
-                if (percent < 1) {
-                    //objMain.carGroup.getObjectByName('car_'+objMain.indexKey).position
-                    var car = objMain.carGroup.getObjectByName('car_' + actionRole);
-                    var deltaX = car.position.x - lightningStrikeMesh.position.x;
-                    var deltaZ = car.position.z - lightningStrikeMesh.position.z;
-
-                    lightningStrikeMesh.geometry.rayParameters.sourceOffset.copy(new THREE.Vector3(deltaX, 10, deltaZ));
-                    lightningStrikeMesh.geometry.rayParameters.sourceOffset.y += 1;
-                    lightningStrikeMesh.geometry.rayParameters.destOffset.copy(new THREE.Vector3(Math.sin(percent * Math.PI * 5) * 3.3, 0, Math.cos(percent * Math.PI * 1.5)));
-                    lightningStrikeMesh.geometry.rayParameters.destOffset.y -= 1;
-                    lightningStrikeMesh.geometry.update(Date.now() / 2000);
-
-                    var targetRoleID = lightningStrikeMesh.userData.targetRoleID;
-                    let targetCar = objMain.carGroup.getObjectByName('car_' + targetRoleID);
-                    if (targetCar) {
-                        lightningStrikeMesh.position.set(targetCar.position.x, targetCar.position.y, targetCar.position.z);
-                    }
-                }
-                else {
-                    lightningStrikeMesh.material.dispose();
-                    lightningStrikeMesh.geometry.dispose();
-                    objMain.lightningGroup.remove(lightningStrikeMesh);
-                }
-            }
-        },
-        clear: function (actionRole) {
-            let name = 'lightning_' + actionRole;
-            var lightningStrikeMesh = objMain.lightningGroup.getObjectByName(name);
-            if (lightningStrikeMesh) {
-                lightningStrikeMesh.material.dispose();
-                lightningStrikeMesh.geometry.dispose();
-                objMain.lightningGroup.remove(lightningStrikeMesh);
-            }
-        },
-        mark:
-        {
-            material: new THREE.LineBasicMaterial({ color: 0xb0fffe }),
-            add: function (pointsArray) {
-                //  this.clear(actionRole);
-                const points = [];
-                points.push(new THREE.Vector3(pointsArray[0], 0, -pointsArray[1]));
-                points.push(new THREE.Vector3(pointsArray[2], 0, -pointsArray[3]));
-                points.push(new THREE.Vector3(pointsArray[4], 0, -pointsArray[5]));
-                points.push(new THREE.Vector3(pointsArray[6], 0, -pointsArray[7]));
-                points.push(new THREE.Vector3(pointsArray[0], 0, -pointsArray[1]));
-                var geometry = new THREE.BufferGeometry().setFromPoints(points);
-                var line = new THREE.Line(geometry, this.material);
-                line.userData = { startT: Date.now() };
-                objMain.lightningMarkGroup.add(line);
-            },
-            Animate: function () {
-                if (Date.now() % 1000 > 500) {
-                    this.material.color.r = 0.68;
-                    this.material.color.g = 0.05859375;
-                    this.material.color.b = 0.9921875;
-                }
-                else {
-                    this.material.color.g = 2;
-                    this.material.color.r = 2;
-                    this.material.color.b = 1;
-                }
-                var group = objMain.lightningMarkGroup;
-                var startIndex = group.children.length - 1;
-                for (var i = startIndex; i >= 0; i--) {
-                    if (Date.now() - group.children[i].userData.startT > 20000)
-                        group.remove(group.children[i]);
-
-                }
-            }
-        }
-    },
-    diamond: {
-        add: function (roleID, diamondName) {
-            if (diamondName == '') {
-                this.clear(roleID, 'mile');
-                this.clear(roleID, 'business');
-                this.clear(roleID, 'volume');
-                this.clear(roleID, 'speed');
-            }
-            else {
-                var diamond = objMain.promoteDiamond.getObjectByName('diamond_' + diamondName);
-                if (diamond) {
-                    var diamondOnCar = objMain.promoteDiamond.getObjectByName('diamond_' + diamondName).clone();
-                    diamondOnCar.name = 'car_' + diamondName + '_' + roleID;
-                    diamondOnCar.position.set(9, 35, 0);
-                    diamondOnCar.scale.set(10, 11, 10);
-                    var car = objMain.carGroup.getObjectByName('car_' + roleID);
-                    if (car)
-                        if (!car.getObjectByName(diamondOnCar.name)) {
-                            car.add(diamondOnCar);
-                            if (roleID == objMain.indexKey) {
-                                stateSet.diamond.updateHeight(roleID);
-                            }
-                        }
-                }
-            }
-        },
-        clear: function (roleID, diamondName) {
-            var car = objMain.carGroup.getObjectByName('car_' + roleID);
-            if (car) {
-                var name = 'car_' + diamondName + '_' + roleID;
-                var diamondOnCar = car.getObjectByName(name);
-                if (diamondOnCar) {
-                    car.remove(diamondOnCar);
-                }
-            }
-        },
-        updateHeight: function (roleID) {
-            var diamondNames = ['mile', 'business', 'volume', 'speed'];
-            for (var i = 0; i < diamondNames.length; i++) {
-                var diamondName = diamondNames[i];
-                var diamondOnCarName = 'car_' + diamondName + '_' + roleID;
-                var car = objMain.carGroup.getObjectByName('car_' + roleID);
-                if (car)
-                    if (car.getObjectByName(diamondOnCarName)) {
-                        var singleDiamond = car.getObjectByName(diamondOnCarName);
-                        singleDiamond.position.y = 35 + stateSet.coinIcon.iconCount * 4;
-                    }
-            }
-        }
-    },
-    clicktrail: null,
-    nitrogeneffect:
-    {
-        add: function () {
-            var car = objMain.carGroup.getObjectByName('car_' + objMain.indexKey);
-            if (car) {
-                objMain.ModelInput.NitrogenEffect.obj.position.set(34, 25, 0);
-                objMain.ModelInput.NitrogenEffect.obj.scale.set(10, 10, 10);
-                objMain.ModelInput.NitrogenEffect.obj.rotateZ(1.021017612416683);
-                objMain.ModelInput.NitrogenEffect.obj.rotateY(Math.PI * 5 / 10);
-                car.add(objMain.ModelInput.NitrogenEffect.obj);
-                stateSet.nitrogeneffect.showVisible(0);
-            }
-        },
-        showVisible: function (level) {
-            var car = objMain.carGroup.getObjectByName('car_' + objMain.indexKey);
-            if (car) {
-                var oIcon = car.getObjectByName('selfnitrogenEffectIcon');
-                if (oIcon) {
-                    oIcon.getObjectByName('level1').visible = level > 0;
-                    oIcon.getObjectByName('level2').visible = level > 1;
-                    oIcon.getObjectByName('level3').visible = level > 2;
-                    oIcon.getObjectByName('level4').visible = level > 3;
-                    oIcon.getObjectByName('level5').visible = level > 4;
-                    oIcon.getObjectByName('level6').visible = level > 5;
-                    oIcon.getObjectByName('level7').visible = level > 6;
-                    oIcon.getObjectByName('level8').visible = level > 7;
-                    oIcon.getObjectByName('level9').visible = level > 8;
-                    oIcon.getObjectByName('levelfull').visible = level > 9;
-                }
-            }
-        }
-    },
-    coinIcon:
-    {
-        iconCount: 0,
-        add: function (iconCount) {
-            var car = objMain.carGroup.getObjectByName('car_' + objMain.indexKey);
-            if (car) {
-                stateSet.coinIcon.iconCount = iconCount;
-                var positionX = 13;
-                var positionY = 32;
-                var positionZ = 0;
-                for (var i = 0; i < 10000; i++) {
-                    var oIcon = car.getObjectByName('collectCoinIcon_' + i.toString());
-                    if (oIcon) {
-                        car.remove(oIcon);
-                    }
-                    else {
-                        break;
-                    }
-                }
-                for (var i = 0; i < iconCount; i++) {
-                    var objAdd = objMain.ModelInput.CollectCoinIcon.obj.clone();
-                    objAdd.name = 'collectCoinIcon_' + i.toString();
-                    objAdd.scale.set(3, 3, 3);
-                    objAdd.rotateX(Math.PI / 2);
-                    objAdd.position.set(positionX, positionY + i * 4, positionZ);
-                    car.add(objAdd);
-
-                }
-                stateSet.diamond.updateHeight(objMain.indexKey);
-            }
-        },
-        addWithKey: function (operateKey, iconCount) {
-            var car = objMain.carGroup.getObjectByName('car_' + operateKey);
-            if (car) {
-                stateSet.coinIcon.iconCount = iconCount;
-                var positionX = 13;
-                var positionY = 32;
-                var positionZ = 0;
-                for (var i = 0; i < 10000; i++) {
-                    var oIcon = car.getObjectByName('collectCoinIcon_' + operateKey + '_' + i.toString());
-                    if (oIcon) {
-                        car.remove(oIcon);
-                    }
-                    else {
-                        break;
-                    }
-                }
-                for (var i = 0; i < iconCount; i++) {
-                    var objAdd = objMain.ModelInput.CollectCoinIcon.obj.clone();
-                    objAdd.name = 'collectCoinIcon_' + operateKey + '_' + i.toString();
-                    objAdd.scale.set(3, 3, 3);
-                    objAdd.rotateX(Math.PI / 2);
-                    objAdd.position.set(positionX, positionY + i * 4, positionZ);
-                    car.add(objAdd);
-
-                }
-                stateSet.diamond.updateHeight(operateKey);
-            }
-        },
-    },
-}
-var DirectionOperator =
-{
-    data: null,
-    show: function (received_obj) {
-        DirectionOperator.data = received_obj;
-        objMain.mainF.removeF.clearGroup(objMain.buildingSelectionGroup);
-        objMain.mainF.removeF.clearGroup(objMain.directionGroup);
-        var newDirectionModle = objMain.ModelInput.direction.clone();
-        newDirectionModle.rotateX(-Math.PI / 2);
-        newDirectionModle.scale.set(0.4, 0.4, 0.4);//(Math.PI / 2);
-        newDirectionModle.position.set(DirectionOperator.data.positionX, -0.1 + DirectionOperator.data.positionZ * objMain.heightAmplify, -DirectionOperator.data.positionY);
-
-        objMain.directionGroup.add(newDirectionModle);
-        for (var i = 0; i < DirectionOperator.data.direction.length; i++) {
-            var newArrow = null;
-            switch (i) {
-                case 0:
-                    {
-                        newArrow = objMain.ModelInput.directionArrowA.obj.clone();
-                    }; break;
-                case 1:
-                    {
-                        newArrow = objMain.ModelInput.directionArrowB.obj.clone();
-                    }; break;
-                case 2:
-                    {
-                        newArrow = objMain.ModelInput.directionArrowC.obj.clone();
-                    }; break;
-            }
-            if (newArrow != null) {
-                //   var newArrow = objMain.ModelInput.directionArrow.obj.clone();
-                newArrow.scale.set(0.03, 0.03, 0.03);//(Math.PI / 2);
-                newArrow.position.set(DirectionOperator.data.positionX, -0.1 + DirectionOperator.data.positionZ * objMain.heightAmplify, -DirectionOperator.data.positionY);
-                newArrow.rotation.y = DirectionOperator.data.direction[i];
-                newArrow.userData = { objState: 0, postionCrossKey: received_obj.postionCrossKey };
-                objMain.directionGroup.add(newArrow);
-            }
-        }
-        operatePanel.refresh();
-        objMain.selection.initialize();
-    },
-    showWhenIsWrong: function (postionCrossKey) {
-        for (var i = 1; i < objMain.directionGroup.children.length; i++) {
-            if (objMain.directionGroup.children[i].userData.objState == 1 && objMain.directionGroup.children[i].userData.postionCrossKey == postionCrossKey) {
-                objMain.directionGroup.children[i].userData.objState = 2;
-            }
-        }
-    },
-    AdviseSelect: function (adviseObj) {
-        if (objMain.directionGroup.visible) {
-            //var minAngle = Math.PI / 20;
-            var selectIndex = -1;
-            for (var i = 1; i < objMain.directionGroup.children.length; i++) {
-
-                if (i == 1 && adviseObj.select == 'A') {
-                    selectIndex = i;
-                }
-                else if (i == 2 && adviseObj.select == 'B') {
-                    selectIndex = i;
-                }
-                else if (i == 3 && adviseObj.select == 'C') {
-                    selectIndex = i;
-                }
-            }
-            if (selectIndex > 0) {
-
-                var rotationY = objMain.directionGroup.children[selectIndex].rotation.y;
-
-                if (objMain.directionGroup.children[selectIndex].userData.objState > 0) {
-                }
-                else {
-                    var json = JSON.stringify({ c: 'ViewAngle', 'rotationY': rotationY, 'postionCrossKey': objMain.directionGroup.children[selectIndex].userData.postionCrossKey, 'uid': adviseObj.Detail.Uid });
-                    objMain.ws.send(json);
-                    //userData.objState
-                    objMain.directionGroup.children[selectIndex].userData.objState = 1;
-
-                }
-                operatePanel.refresh();
-            }
-        }
-    }
-};
-
-var ShowRoadCrossSelectionsOperator =
-{
-    data: null,
-    show: function (received_obj) {
-        ShowRoadCrossSelectionsOperator.data = received_obj;
-        objMain.mainF.removeF.clearGroup(objMain.crossSelectionsOperator);
-
-        for (var i = 0; i < received_obj.crossDirects.length; i += 6) {
-
-            var c = new Complex(
-                received_obj.crossDirects[i + 4] - received_obj.crossDirects[i + 1],
-                -(received_obj.crossDirects[i + 3] - received_obj.crossDirects[i + 0]));
-            c.toOne();
-
-
-            // var geometryData = [-0.309, 0.0955, -0.0955, 0.0955, -0.0955, 0.7135];
-            //var geometryData = [new Complex(-0.309, 0.0955), new Complex(-0.0955, 0.0955), new Complex(-0.0955, 0.7135)];
-            const zoom = 0.35;
-            {
-                var geometryData = [new Complex(-0.309, 0.0955), new Complex(-0.0955, 0.0955), new Complex(-0.0955, 0.7135)];
-                const points = [];
-
-                for (var j = 0; j < geometryData.length; j++) {
-                    var c1 = geometryData[j].multiply(c);//multiply
-                    points.push(new THREE.Vector3(
-                        received_obj.crossDirects[i + 0] + c1.r * zoom,
-                        received_obj.crossDirects[i + 2] * objMain.heightAmplify,
-                        -received_obj.crossDirects[i + 1] - c1.i * zoom)); // 起点坐标
-                }
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                const line = new THREE.Line(lineGeometry, ShowRoadCrossSelectionsOperator.lineMaterial);
-                objMain.crossSelectionsOperator.add(line);
-                //points.push(new THREE.Vector3(received_obj.crossDirects[i + 0], -received_obj.crossDirects[i + 2] * objMain.heightAmplify, -received_obj.crossDirects[i + 1])); // 起点坐标
-                //points.push(new THREE.Vector3(received_obj.crossDirects[i + 3], -received_obj.crossDirects[i + 5] * objMain.heightAmplify, -received_obj.crossDirects[i + 4])); // 起点坐标
-            }
-            {
-                var geometryData = [new Complex(0.309, 0.0955), new Complex(0.0955, 0.0955), new Complex(0.0955, 0.7135)];
-                const points = [];
-                for (var j = 0; j < geometryData.length; j++) {
-                    var c1 = geometryData[j].multiply(c);//multiply
-                    points.push(new THREE.Vector3(
-                        received_obj.crossDirects[i + 0] + c1.r * zoom,
-                        received_obj.crossDirects[i + 2] * objMain.heightAmplify,
-                        -received_obj.crossDirects[i + 1] - c1.i * zoom)); // 起点坐标
-                }
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                const line = new THREE.Line(lineGeometry, ShowRoadCrossSelectionsOperator.lineMaterial);
-                objMain.crossSelectionsOperator.add(line);
-                //points.push(new THREE.Vector3(received_obj.crossDirects[i + 0], -received_obj.crossDirects[i + 2] * objMain.heightAmplify, -received_obj.crossDirects[i + 1])); // 起点坐标
-                //points.push(new THREE.Vector3(received_obj.crossDirects[i + 3], -received_obj.crossDirects[i + 5] * objMain.heightAmplify, -received_obj.crossDirects[i + 4])); // 起点坐标
-            }
-        }
-    },
-    lineMaterial: new THREE.LineBasicMaterial({ color: 0x00ff00 })
-}
-
-var BuildingModelObj =
-{
-
-    copy: function (amodel, received_obj) {
-        if (objMain.buildingModel[amodel] == undefined) {
-
-        }
-        else {
-            if (objMain.buildingGroup.getObjectByName(received_obj.modelID) == undefined) {
-                var obj = objMain.buildingModel[amodel].clone();
-                obj.name = received_obj.modelID;
-                obj.position.set(received_obj.x, received_obj.y * objMain.heightAmplify, received_obj.z);
-                obj.rotation.set(0, received_obj.rotatey, 0, 'XYZ');
-                obj.userData.modelType = received_obj.modelType;
-                objMain.buildingGroup.add(obj);
-                if (objMain.state == 'LookForBuildings') {
-                    objMain.mainF.lookAtPosition2();
-                }
-                QueryReward.lookAt();
-                objMain.buildingModel[amodel] = null;
-                //  s
-                var amodelIdWillDel = amodel + '';
-                setTimeout(function () {
-                    delete objMain.buildingModel[amodel];
-                    // 这里放置要延迟执行的代码
-                }, 30000);
-                // delete objMain.buildingModel[amodel];
-            }
-        }
-    },
-    respon: function (received_obj) {
-        throw '此方法已停用！';
-        //var amodel = received_obj.amodel;
-        //if (objMain.buildingModel[amodel] == undefined) {
-        //    objMain.ws.send(JSON.stringify({ 'c': 'ModelNotExited' }));
-        //}
-        //else {
-        //    objMain.ws.send(JSON.stringify({ 'c': 'ModelExited' }));
-        //}
-    },
-    Refresh: function () {
-        for (var dModeItem in objMain.buildingData.dModel) {
-
-            var dItem = objMain.buildingData.dModel[dModeItem];
-
-            if (objMain.buildingGroup.getObjectByName(dModeItem)) { }
-            else {
-                var amodelID = dItem.amodel;
-                if (objMain.buildingModel[amodelID] == undefined) {
-                    if (this.RequestTime[dModeItem] == undefined) {
-                        this.RequestTime[dModeItem] = 0;
-                    }
-                    if (Date.now() - this.RequestTime[dModeItem] > 30000) {
-                        this.RequestTime[dModeItem] = Date.now();
-                        var url = "http://127.0.0.1:11001/objdata/" + amodelID;
-
-                        if (objMain.debug != 2) {
-                            url = "http://127.0.0.1:11001/objdata/" + amodelID;
-
-                        }
-                        else {
-                            //  url = "https://www.nyrq123.com/objtaiyuan/" + amodelID;
-                            //  url = "http://127.0.0.1:11001/objdata/"
-                            url = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amodelID + ".json";
-                        }
-                        $.getJSON(url, function (json) {
-                            var manager = new THREE.LoadingManager();
-                            var amID = json.AmID;
-                            var objText = json.objText;
-                            var mtlText = json.mtlText;
-                            var imgBase64 = json.imgBase64;
-                            var modelType = json.modelType;
-                            var mtlManaget = null;
-                            var mtlOnload = function (materials) {
-                                materials.preload();
-                                var objL = new THREE.OBJLoader(manager)
-                                    .setMaterials(materials)
-                                    .loadTextOnly(objText, function (object) {
-                                        object.userData.modelType = modelType;
-                                        objMain.buildingModel[amID] = object;
-                                        BuildingModelObj.Refresh();
-                                        objL = null;
-                                        manager = null;
-                                        mtlManaget = null;
-                                    }, function () { }, function () { });
-                            };
-                            //var imgUrl=
-                            if (objMain.debug != 2) {
-                                //   url = "http://127.0.0.1:11001/objdata/" + amodelID;
-                                if (objMain.buildingGroup.getObjectByName(amID) == undefined) {
-                                    //   var manager = new THREE.LoadingManager();
-                                    mtlManaget = new THREE.MTLLoader(manager)
-                                        .loadTextOnly(mtlText, 'data:image/jpeg;base64,' + imgBase64, mtlOnload);
-                                }
-                            }
-                            else {
-                                //  url = "https://www.nyrq123.com/objtaiyuan/" + amodelID;
-                                //  url = "http://127.0.0.1:11001/objdata/"
-                                //  url = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amodelID + ".json";
-                                //var ima
-                                if (objMain.buildingGroup.getObjectByName(amID) == undefined) {
-                                    var imgUrl = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amID + ".jpg";
-                                    var manager = new THREE.LoadingManager();
-                                    mtlManaget = new THREE.MTLLoader(manager).loadTextWithImageUrl(mtlText, imgUrl, mtlOnload);
-                                }
-                            }
-
-                        })
-                    }
-
-                }
-                else {
-                    BuildingModelObj.copy(amodelID, dItem);
-                }
-            }
-            //var amodelID = dItem.amodel;
-
-        }
-    },
-    Refresh_bak: function () {
-        for (var dModeItem in objMain.buildingData.dModel) {
-
-            var dItem = objMain.buildingData.dModel[dModeItem];
-            var amodelID = dItem.amodel;
-            if (objMain.buildingModel[amodelID] == undefined) {
-                if (this.RequestTime[dModeItem] == undefined) {
-                    this.RequestTime[dModeItem] = 0;
-                }
-                if (Date.now() - this.RequestTime[dModeItem] > 30000) {
-                    this.RequestTime[dModeItem] = Date.now();
-                    var url = "http://127.0.0.1:11001/objdata/" + amodelID;
-
-                    if (objMain.debug != 2) {
-                        url = "http://127.0.0.1:11001/objdata/" + amodelID;
-
-                    }
-                    else {
-                        //  url = "https://www.nyrq123.com/objtaiyuan/" + amodelID;
-                        //  url = "http://127.0.0.1:11001/objdata/"
-                        url = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amodelID + ".json";
-                    }
-                    $.getJSON(url, function (json) {
-                        var manager = new THREE.LoadingManager();
-                        var amID = json.AmID;
-                        var objText = json.objText;
-                        var mtlText = json.mtlText;
-                        var imgBase64 = json.imgBase64;
-                        var modelType = json.modelType;
-                        var mtlManaget = null;
-                        var mtlOnload = function (materials) {
-                            materials.preload();
-                            var objL = new THREE.OBJLoader(manager)
-                                .setMaterials(materials)
-                                .loadTextOnly(objText, function (object) {
-                                    object.userData.modelType = modelType;
-                                    objMain.buildingModel[amID] = object;
-                                    BuildingModelObj.Refresh();
-                                    objL = null;
-                                    manager = null;
-                                    mtlManaget = null;
-                                }, function () { }, function () { });
-                        };
-                        //var imgUrl=
-                        if (objMain.debug != 2) {
-                            //   url = "http://127.0.0.1:11001/objdata/" + amodelID;
-                            if (objMain.buildingGroup.getObjectByName(amID) == undefined) {
-                                //   var manager = new THREE.LoadingManager();
-                                mtlManaget = new THREE.MTLLoader(manager)
-                                    .loadTextOnly(mtlText, 'data:image/jpeg;base64,' + imgBase64, mtlOnload);
-                            }
-                        }
-                        else {
-                            //  url = "https://www.nyrq123.com/objtaiyuan/" + amodelID;
-                            //  url = "http://127.0.0.1:11001/objdata/"
-                            //  url = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amodelID + ".json";
-                            //var ima
-                            if (objMain.buildingGroup.getObjectByName(amID) == undefined) {
-                                var imgUrl = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/objmodel/" + amID + ".jpg";
-                                var manager = new THREE.LoadingManager();
-                                mtlManaget = new THREE.MTLLoader(manager).loadTextWithImageUrl(mtlText, imgUrl, mtlOnload);
-                            }
-                        }
-
-                    })
-                }
-
-            }
-            else {
-                BuildingModelObj.copy(amodelID, dItem);
-            }
-        }
-    },
-
-
-    RequestTime: {}
-};
-
-var roadDisplayFunction =
-{
-    roadData: {},
-    show: function (dataHash, roadCode) {
-        if (roadDisplayFunction.roadData[roadCode]) { return; }
-        else {
-            roadDisplayFunction.roadData[roadCode] = false;
-            roadDisplayFunction.Refresh(dataHash);
-        }
-    },
-    Refresh: function (dataHash) {
-        for (var roadCode in roadDisplayFunction.roadData) {
-            if (roadDisplayFunction.roadData[roadCode]) {
-            }
-            else {
-                if (this.RequestTime[roadCode] == undefined) {
-                    this.RequestTime[roadCode] = 0;
-                }
-                if (Date.now() - this.RequestTime[roadCode] > 30000) {
-                    this.RequestTime[roadCode] = Date.now();
-                    var url = "http://127.0.0.1:11001/roaddata/" + roadCode;
-
-                    if (objMain.debug != 2) {
-                        url = "http://127.0.0.1:11001/roaddata/" + roadCode;
-                    }
-                    else {
-                        url = "https://yrqmodeldata.oss-cn-beijing.aliyuncs.com/roadData/" + dataHash + "/" + roadCode + ".json";
-                    }
-                    $.getJSON(url, function (received_obj) {
-                        //var meshPoints = json.meshPoints;
-                        var basePoint = received_obj.basePoint;
-                        var roadCodeOperating = received_obj.roadCode;
-                        if (roadDisplayFunction.roadData[roadCodeOperating]) { return; }
-                        else {
-                            roadDisplayFunction.roadData[roadCodeOperating] = true;
-                            for (var i = 0; i < received_obj.meshPoints.length; i += 12) {
-                                var itemData = [
-                                    (received_obj.meshPoints[i + 0] + basePoint[0]) / 1000000,
-                                    (received_obj.meshPoints[i + 1] + basePoint[1]) / 1000000,
-                                    (received_obj.meshPoints[i + 2] + basePoint[2]) / 1000000,
-                                    (received_obj.meshPoints[i + 3] + basePoint[0]) / 1000000,
-                                    (received_obj.meshPoints[i + 4] + basePoint[1]) / 1000000,
-                                    (received_obj.meshPoints[i + 5] + basePoint[2]) / 1000000,
-                                    (received_obj.meshPoints[i + 6] + basePoint[0]) / 1000000,
-                                    (received_obj.meshPoints[i + 7] + basePoint[1]) / 1000000,
-                                    (received_obj.meshPoints[i + 8] + basePoint[2]) / 1000000,
-                                    (received_obj.meshPoints[i + 9] + basePoint[0]) / 1000000,
-                                    (received_obj.meshPoints[i + 10] + basePoint[1]) / 1000000,
-                                    (received_obj.meshPoints[i + 11] + basePoint[2]) / 1000000
-                                ];
-                                MapData.meshPoints.push(itemData);
-                                // MapData.meshPoints.push(received_obj.meshPoints[i]);
-                            }
-
-                            var drawRoadInfomation = function () {
-
-                                {
-                                    var group = objMain.roadGroup;
-                                    var startIndex = group.children.length - 1;
-                                    for (var i = startIndex; i >= 0; i--) {
-                                        //if (group.children[i].type == "Mesh")
-                                        {
-                                            group.children[i].geometry.dispose();
-                                            group.children[i].material.dispose();
-                                        }
-                                    }
-                                }
-
-                                objMain.mainF.removeF.clearGroup(objMain.roadGroup);
-                                //  objMain.F.clearGroup(
-                                var obj = MapData.meshPoints;
-
-                                var positions = [];
-                                //   var colors = [];
-                                for (var i = 0; i < obj.length; i++) {
-                                    positions.push(
-                                        MercatorGetXbyLongitude(obj[i][0]), MercatorGetXbyLongitude(obj[i][2]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][1]),
-                                        MercatorGetXbyLongitude(obj[i][3]), MercatorGetXbyLongitude(obj[i][5]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][4]),
-                                        MercatorGetXbyLongitude(obj[i][6]), MercatorGetXbyLongitude(obj[i][8]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][7]),
-                                        MercatorGetXbyLongitude(obj[i][6]), MercatorGetXbyLongitude(obj[i][8]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][7]),
-                                        MercatorGetXbyLongitude(obj[i][9]), MercatorGetXbyLongitude(obj[i][11]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][10]),
-                                        MercatorGetXbyLongitude(obj[i][0]), MercatorGetXbyLongitude(obj[i][2]) * objMain.heightAmplify, -MercatorGetYbyLatitude(obj[i][1]),
-
-                                    );
-                                }
-                                function disposeArray() {
-
-                                    this.array = null;
-
-                                }
-                                //  console.log('p', positions);
-                                //var vertices = new Float32Array(positions);
-                                var geometry = new THREE.BufferGeometry();
-                                geometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3).onUpload(disposeArray));
-                                //geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3).onUpload(disposeArray));
-                                geometry.computeBoundingSphere();
-                                //var material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
-                                var material = new THREE.MeshBasicMaterial({ color: 0xeedd78 });
-                                var mesh = new THREE.Mesh(geometry, material);
-
-                                objMain.roadGroup.add(mesh);
-
-
-                                var edges = new THREE.EdgesGeometry(geometry);
-                                var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xeeddf0 }));
-                                objMain.roadGroup.add(line);
-
-                            };
-                            drawRoadInfomation();
-                            roadDisplayFunction.Refresh(dataHash);
-                        }
-                    })
-                }
-            }
-        }
-    },
-    RequestTime: {}
-};
 
 var SetBustPage = function () {
     window.cancelAnimationFrame(objMain.animateObj)
@@ -7109,33 +4725,7 @@ var DiamondModel =
 };
 
 var sceneYUpdate = function (deltaY) {
-    var v1 = new THREE.Vector3().subVectors(objMain.controls.target, objMain.camera.position);
-    if (v1.length() > 0) {
-        v1.setLength(1);
-        var v2 = new THREE.Vector3(0, 1, 0);
-        var v3 = new THREE.Vector3().crossVectors(v1, v2);
-        if (v3.length() > 0) {
-            v3.setLength(1);
-            v2 = new THREE.Vector3().crossVectors(v3, v1);
 
-            var v4 = v2.applyAxisAngle(v3, (0.5 - 0.618) * 35 / 180 * Math.PI);
-            var A = v4.x;
-            var B = v4.y;
-            var C = v4.z;
-            var D = -A * objMain.camera.position.x - B * objMain.camera.position.y - C * objMain.camera.position.z;
-
-            if (Math.abs(B) > 1e-4) {
-                var calY = (-D - A * objMain.controls.target.x - C * objMain.controls.target.z) / B;
-                if (calY > 25)
-                    calY = 25;
-                else if (calY < -25)
-                    calY = -25;
-                objMain.scene.position.y = calY - deltaY;
-                //  objMain.scene.
-                return calY;
-            }
-        }
-    }
 }
 
 var OperateHelp =
@@ -7223,6 +4813,448 @@ var lookInfoForCar = function () {
 
 
 }
+
+var showDesk = function () {
+    var onProgress = function () { };
+    var onError = function () { };
+    new THREE.MTLLoader()
+        .setPath('mahjong/desk/')
+        .load('mahjongdesk.mtl', function (materials) {
+
+            materials.preload();
+
+            new THREE.OBJLoader()
+                .setMaterials(materials)
+                .setPath('mahjong/desk/')
+                .load('mahjongdesk.obj', function (object) {
+
+                    object.position.y = 0;
+                    object.name = 'mahjongDesk';
+                    object.scale.set(0.4, 0.4, 0.4);
+                    object.rotateY(Math.PI)
+                    object.castShadow = true;
+                    object.receiveShadow = true
+                    objMain.scene.add(object);
+
+                }, onProgress, onError);
+
+        });
+}
+
+var showAxes = function () {
+    objMain.axesHelper = new THREE.AxesHelper(20);
+    objMain.axesHelper.name = 'axesHelper';
+    // objMain.scene.getObjectByName('axesHelper').position.set(received_obj.mctX / 256, 0, 0 - received_obj.mctY / 256);
+    objMain.axesHelper.position.set(0, 0, 0);
+    objMain.scene.add(objMain.axesHelper);
+}
+
+var mahjongDisplay =
+{
+    load: function () {
+        var mahjongArray = [0,
+            1, 2, 3, 4, 5, 6, 7, 8, 9,
+            11, 12, 13, 14, 15, 16, 17, 18, 19,
+            21, 22, 23, 24, 25, 26, 27, 28, 29,
+            40, 47, 54, 61, 68, 75, 82
+        ]
+
+        for (var i = 0; i < mahjongArray.length; i++) {
+
+            var mtlFileName = (i == 0 ? 'm0.mtl' : ('m' + 'all' + '.mtl'));
+            var objFileName = 'm' + mahjongArray[i] + '.obj';
+            var objName = 'm' + mahjongArray[i];
+
+            var loadF = function (mtlFileName, objFileName, objName) {
+                var onProgress = function () { };
+                var onError = function () { };
+                new THREE.MTLLoader()
+                    .setPath('mahjong/majong/')
+                    .load(mtlFileName, function (materials) {
+
+                        materials.preload();
+
+                        new THREE.OBJLoader()
+                            .setMaterials(materials)
+                            .setPath('mahjong/majong/')
+                            .load(objFileName, function (object) {
+
+                                object.position.y = 0;
+                                object.name = objName;
+                                //   object.scale.set(0.4, 0.4, 0.4);
+                                // object.rotateY(Math.PI)
+                                object.castShadow = true;
+                                objMain.mahjongsModel[objName] = object;
+                                // objMain.scene.add(object);
+
+                            }, onProgress, onError);
+
+                    });
+            }
+
+            loadF(mtlFileName, objFileName, objName);
+        }
+        //{
+        //    var onProgress = function () { };
+        //    var onError = function () { };
+        //    new THREE.MTLLoader()
+        //        .setPath('mahjong/majong/')
+        //        .load('m0.mtl', function (materials) {
+
+        //            materials.preload();
+
+        //            new THREE.OBJLoader()
+        //                .setMaterials(materials)
+        //                .setPath('mahjong/majong/')
+        //                .load('m0.obj', function (object) {
+
+        //                    object.position.y = 0;
+        //                    object.name = 'm0';
+        //                    //   object.scale.set(0.4, 0.4, 0.4);
+        //                    // object.rotateY(Math.PI)
+        //                    object.castShadow = true;
+        //                    objMain.mahjongsModel.m0 = object;
+        //                    // objMain.scene.add(object);
+
+        //                }, onProgress, onError);
+
+        //        });
+        //}
+        {
+            var onProgress = function () { };
+            var onError = function () { };
+            new THREE.MTLLoader()
+                .setPath('mahjong/majong/dice/')
+                .load('dice.mtl', function (materials) {
+
+                    materials.preload();
+
+                    new THREE.OBJLoader()
+                        .setMaterials(materials)
+                        .setPath('mahjong/majong/dice/')
+                        .load('dice.obj', function (object) {
+
+                            object.position.y = 0.015;
+
+                            object.scale.set(0.0015, 0.0015, 0.0015);
+                            object.name = 'dice1';
+                            object.rotateX(-Math.PI / 2)
+                            //   object.scale.set(0.4, 0.4, 0.4);
+                            // object.rotateY(Math.PI)
+                            object.castShadow = true;
+                            objMain.mahjongsModel.dice = object;
+                            objMain.scene.add(object);
+                            objMain.diceGroup.add(object);
+                            var dice2 = object.clone();
+                            dice2.position.x = 0.03;
+                            dice2.name = 'dice2';
+                            objMain.diceGroup.add(dice2);
+                            //dice2.x
+                            objMain.diceGroup.position.y = 0.8;
+
+                        }, onProgress, onError);
+
+                });
+        }
+
+    },
+    sortedShow: function () {
+        for (var i = 0; i < 34; i++) {
+            var o = objMain.mahjongsModel.m0.clone();
+            o.name = 'mahjong' + i;
+            o.rotateX(Math.PI / 2);
+            o.position.y = 0.8 + (i % 2 == 0 ? 0.03 : 0.01);
+            objMain.mahjongsGroup.add(o);
+            o.position.x += 0.25;
+            o.position.z = -0.23 + Math.floor(i / 2) * 0.029;
+            o.rotateZ(-Math.PI / 2);
+            o.castShadow = true;
+            //break;
+            //  objMain.mahjongsGroup.add
+        }
+        for (var i = 34; i < 68; i++) {
+            var o = objMain.mahjongsModel.m0.clone();
+            o.name = 'mahjong' + i;
+            o.rotateX(Math.PI / 2);
+            o.position.y = 0.8 + (i % 2 == 0 ? 0.03 : 0.01);
+            objMain.mahjongsGroup.add(o);
+            o.position.z += 0.25;
+            o.position.x = 0.23 - Math.floor((i % 34) / 2) * 0.029;
+            o.rotateZ(0);
+            o.castShadow = true;
+        }
+        for (var i = 68; i < 102; i++) {
+            var o = objMain.mahjongsModel.m0.clone();
+            o.name = 'mahjong' + i;
+            o.rotateX(Math.PI / 2);
+            o.position.y = 0.8 + (i % 2 == 0 ? 0.03 : 0.01);
+            objMain.mahjongsGroup.add(o);
+            o.position.x += -0.25;
+            o.position.z = 0.23 - Math.floor((i % 34) / 2) * 0.029;
+            o.rotateZ(Math.PI / 2);
+            o.castShadow = true;
+        }
+        for (var i = 102; i < 136; i++) {
+            var o = objMain.mahjongsModel.m0.clone();
+            o.name = 'mahjong' + i;
+            o.rotateX(Math.PI / 2);
+            o.position.y = 0.8 + (i % 2 == 0 ? 0.03 : 0.01);
+            objMain.mahjongsGroup.add(o);
+            o.position.z += -0.25;
+            o.position.x = -0.23 + Math.floor((i % 34) / 2) * 0.029;
+            o.rotateZ(Math.PI);
+            o.castShadow = true;
+        }
+    },
+    showMahjongsOnHand: function (mahjongs) {
+        var dic_Private = {};
+        var dic_Peng = {};
+        var dic_MingGang = {};
+        var dic_AnGang = {};
+        for (var i = 0; i < mahjongs.length; i += 3) {
+            /*
+            1代表自己，2代表下家,3代表对家,4代表上家，+10代表庄
+            */
+            if (mahjongs[i] % 10 == 1) {
+                //第二行0代表没动作，1代表来牌，2代表出牌//12代表听，3代表碰，4代表杠，
+                if (mahjongs[i + 1] % 10 == 1) {
+                    //起的牌
+                    if (dic_Private[mahjongs[i + 2]] == undefined) {
+                        dic_Private[mahjongs[i + 2]] = 1;
+                    }
+                    else {
+                        dic_Private[mahjongs[i + 2]]++;
+                    }
+                }
+                else if (mahjongs[i + 1] % 10 == 2) {
+                    //表示出牌或者听的牌。
+                    if (dic_Private[mahjongs[i + 2]] == undefined) {
+                        throw '出牌逻辑出去，对不上号';//出牌的时候，手里没有牌。当然报错。
+                    }
+                    else if (dic_Private[mahjongs[i + 2]] < 1) {
+                        throw '出牌逻辑出去，对不上号,牌数小于1';
+                        //出牌的时候，手里必须有牌
+                    }
+                    else {
+                        dic_Private[mahjongs[i + 2]]--;
+                    }
+                }
+                else if (mahjongs[i + 1] % 10 == 3) {
+                    //表示碰牌。
+                    if (dic_Private[mahjongs[i + 2]] == undefined) {
+                        throw '碰牌逻辑出去，对不上号';
+                    }
+                    else if (dic_Private[mahjongs[i + 2]] < 2) {
+                        throw '碰牌逻辑出去，对不上号，牌数小于2';
+                    }
+                    else {
+                        dic_Private[mahjongs[i + 2]] -= 2;
+                        if (dic_Peng[mahjongs[i + 2]] == undefined) {
+                            dic_Peng[mahjongs[i + 2]] = 1;
+                        }
+                        else {
+                            throw '碰牌逻辑出去，碰两次？';
+                        }
+                    }
+                }
+                else if (mahjongs[i + 1] % 10 == 4) {
+                    //表示杠牌。
+                    if (dic_Private[mahjongs[i + 2]] == undefined) {
+                        throw '杠牌逻辑不对，对不上号';
+                    }
+                    else if (dic_Private[mahjongs[i + 2]] == 4) {
+                        //暗杠
+                        dic_Private[mahjongs[i + 2]] == 0;
+                        dic_AnGang[mahjongs[i + 2]] = 1;
+                        //throw '碰牌逻辑出去，对不上号，牌数小于2';
+                    }
+                    else if (dic_Private[mahjongs[i + 2]] == 1 && dic_Peng[mahjongs[i + 2]] == 1) {
+                        //明杠，先碰后杠
+                        //由一张单牌和一组碰，组成杠。
+                        dic_MingGang[mahjongs[i + 2]] = 1;
+                        dic_Peng[mahjongs[i + 2]] = 0;
+                        dic_Private[mahjongs[i + 2]] = 0;
+                    }
+                    else if (dic_Private[mahjongs[i + 2]] == 3) {
+                        if (i >= 3) {
+                            if (mahjongs[i - 3] % 10 != 1 && mahjongs[i - 3] % 10 > 0) {
+                                if (mahjongs[i - 3 + 1] == 2) {
+                                    //** 别的玩家出牌*/
+                                    if (mahjongs[i - 3 + 2] == mahjongs[i + 2]) {
+                                        //即别的玩家出牌杠。
+                                        dic_Private[mahjongs[i + 2]] = 0;
+                                        dic_MingGang[mahjongs[i + 2]] = 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //else if()
+            }
+        }
+        var list_Private = [];
+        for (let key in dic_Private) {
+            // console.log(`键（Key）: ${key}, 值（Value）: ${obj[key]}`);
+            //console.log(`键（Key）: ${key}, 值（Value）: ${dic_Private[key]}`);
+            for (var i = 0; i < dic_Private[key]; i++) {
+                list_Private.push(key);
+            }
+        }
+        list_Private.sort((a, b) => a - b);
+        objMain.mainF.removeF.clearGroup(objMain.mahjongsOnHandGroup);
+        for (var i = 0; i < list_Private.length; i++) {
+            var objOp = objMain.mahjongsModel['m' + list_Private[i]];
+            var objClone = objOp.clone();
+            objClone.rotateY(Math.PI / 2);
+            objClone.name = 'list' + [i];
+            objClone.position.y = 0.8 + 0;
+            objClone.position.z = 0.029 * 6 - i * 0.029;
+            objClone.position.x = 0.34;
+            objMain.mahjongsOnHandGroup.add(objClone);
+            // break;
+            //objMain.mainF.clearGroup()
+            //var 
+            // objMain.mahjongsOnHandGroup.add()
+        }
+
+        if (list_Private.length == 14 || list_Private.length == 11 || list_Private.length == 8) {
+
+        }
+    },
+    checkCanTing: function (list_Private, dic_Peng, dic_MingGang, dic_AnGang) {
+        let k = 1;
+        for (let i = 0; i < list_Private.length; i++) {
+
+            if (list_Private[i] > 0 && list_Private[i] < 10) {
+                /*此条件为检验饼子*/
+                if (k % 2 != 0) {
+                    k *= 2;
+                }
+            }
+            else if (list_Private[i] > 10 && list_Private[i] < 20) {
+                /*此条件为检验条子*/
+                if (k % 3 != 0) {
+                    k *= 3;
+                }
+            }
+            else if (list_Private[i] > 20 && list_Private[i] < 30) {
+                /*此条件为检验万子*/
+                if (k % 5 != 0) {
+                    k *= 5;
+                }
+            }
+            else {
+                /*此条件为检验风*/
+                if (k % 7 != 0) {
+                    k *= 5;
+                }
+            }
+        }
+        for (let key in dic_Peng) {
+            if (key > 0 && key < 10) {
+                /*此条件为检验饼子*/
+                if (k % 2 != 0) {
+                    k *= 2;
+                }
+            }
+            else if (key > 10 && key < 20) {
+                /*此条件为检验条子*/
+                if (k % 3 != 0) {
+                    k *= 3;
+                }
+            }
+            else if (key > 20 && key < 30) {
+                /*此条件为检验万子*/
+                if (k % 5 != 0) {
+                    k *= 5;
+                }
+            }
+            else {
+                /*此条件为检验风*/
+                if (k % 7 != 0) {
+                    k *= 5;
+                }
+            }
+        }
+
+        for (let key in dic_MingGang) {
+            if (key > 0 && key < 10) {
+                /*此条件为检验饼子*/
+                if (k % 2 != 0) {
+                    k *= 2;
+                }
+            }
+            else if (key > 10 && key < 20) {
+                /*此条件为检验条子*/
+                if (k % 3 != 0) {
+                    k *= 3;
+                }
+            }
+            else if (key > 20 && key < 30) {
+                /*此条件为检验万子*/
+                if (k % 5 != 0) {
+                    k *= 5;
+                }
+            }
+            else {
+                /*此条件为检验风*/
+                if (k % 7 != 0) {
+                    k *= 5;
+                }
+            }
+        }
+
+        for (let key in dic_AnGang) {
+            if (key > 0 && key < 10) {
+                /*此条件为检验饼子*/
+                if (k % 2 != 0) {
+                    k *= 2;
+                }
+            }
+            else if (key > 10 && key < 20) {
+                /*此条件为检验条子*/
+                if (k % 3 != 0) {
+                    k *= 3;
+                }
+            }
+            else if (key > 20 && key < 30) {
+                /*此条件为检验万子*/
+                if (k % 5 != 0) {
+                    k *= 5;
+                }
+            }
+            else {
+                /*此条件为检验风*/
+                if (k % 7 != 0) {
+                    k *= 5;
+                }
+            }
+        }
+
+        if (
+            k == 2 ||//桶，清一色
+            k == 3 ||//条，清一色
+            k == 5 ||//万，清一色
+            k == 7 ||//风，清一色
+            (k % 6 == 0 && k % 5 != 0) ||//缺门，缺万
+            (k % 10 == 0 && k % 3 != 0) ||//缺门，缺万
+            (k % 15 == 0 && k % 2 != 0))//缺门，缺桶
+        {
+            //胡牌的基本条件通常是：
+            //至少有一个对子（两张相同的牌）作为眼，
+            //其余的牌可以组成顺子（序数连续的三张牌，如123）或
+            //刻子（三张相同的牌）。
+            if (list_Private.length == 14) {
+
+            }
+        }
+        else return [false, -1, -1]
+        //return [false,-1]
+    }
+}
+
+
 //////////
 /*
  * 手柄类，此游戏只支持单手柄操作。
