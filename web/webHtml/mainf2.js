@@ -2629,22 +2629,22 @@ var startA = function () {
                 switch (r) {
                     case 'A':
                         {
-                            wsConnect = 'ws://127.0.0.1:11001/websocket';
+                            wsConnect = 'ws://127.0.0.1:17001/mahjong';
                         }; break;
                     case 'B':
                         {
-                            wsConnect = 'ws://127.0.0.1:11002/websocket';
+                            wsConnect = 'ws://127.0.0.1:11002/mahjong';
                         }; break;
                     default:
                         {
-                            wsConnect = 'ws://127.0.0.1:11001/websocket';
+                            wsConnect = 'ws://127.0.0.1:11001/mahjong';
                         }
                 }
 
             }; break;
         case 1:
             {
-                wsConnect = 'ws://192.168.0.112:11001/websocket';
+                wsConnect = 'ws://192.168.0.112:11001/mahjong';
             }; break;
         default:
             {

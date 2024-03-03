@@ -5,3 +5,16 @@
 /.vs/taigumajiangAI/FileContentIndex/30872923-e52d-4382-be5c-6cf2baafa5cc.vsidx
 *.vsidx
 /.vs/slnx.sqlite
+/.vs/
+/CommonClass/bin/
+/CommonClass/obj/
+/HouseMahjong/bin/
+/HouseMahjong/obj/
+/TcpFunction/bin/
+/TcpFunction/obj/
+/WsOfMahjongClient/bin/
+/WsOfMahjongClient/obj/
+
+/MajiangServer/bin/
+/MajiangServer/obj/
+/MajiangServer/.vs/

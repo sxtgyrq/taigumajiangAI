@@ -3,7 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MajiangServer", "MajiangServer.csproj", "{75B6299B-1B6B-4C41-9D11-C55D6B506BF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MajiangServer", "MajiangServer.csproj", "{75B6299B-1B6B-4C41-9D11-C55D6B506BF7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WsOfMahjongClient", "..\WsOfMahjongClient\WsOfMahjongClient.csproj", "{3B59293D-002C-492A-9D9F-AF5C329EDD42}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonClass", "..\CommonClass\CommonClass.csproj", "{CEA7AF0F-419E-4C80-9928-5A065CFC8FB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FC00B394-5D05-4A4A-990D-730F13F37E17}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcpFunction", "..\TcpFunction\TcpFunction.csproj", "{047E41A0-EF2D-4CB2-8E85-8E539DBAF344}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HouseMahjong", "..\HouseMahjong\HouseMahjong.csproj", "{D8AAC302-B9BF-40B8-8942-7FCB7B8EE545}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +28,22 @@ Global
 		{75B6299B-1B6B-4C41-9D11-C55D6B506BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75B6299B-1B6B-4C41-9D11-C55D6B506BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75B6299B-1B6B-4C41-9D11-C55D6B506BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B59293D-002C-492A-9D9F-AF5C329EDD42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B59293D-002C-492A-9D9F-AF5C329EDD42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B59293D-002C-492A-9D9F-AF5C329EDD42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B59293D-002C-492A-9D9F-AF5C329EDD42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEA7AF0F-419E-4C80-9928-5A065CFC8FB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEA7AF0F-419E-4C80-9928-5A065CFC8FB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEA7AF0F-419E-4C80-9928-5A065CFC8FB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEA7AF0F-419E-4C80-9928-5A065CFC8FB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{047E41A0-EF2D-4CB2-8E85-8E539DBAF344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{047E41A0-EF2D-4CB2-8E85-8E539DBAF344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{047E41A0-EF2D-4CB2-8E85-8E539DBAF344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{047E41A0-EF2D-4CB2-8E85-8E539DBAF344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8AAC302-B9BF-40B8-8942-7FCB7B8EE545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8AAC302-B9BF-40B8-8942-7FCB7B8EE545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8AAC302-B9BF-40B8-8942-7FCB7B8EE545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8AAC302-B9BF-40B8-8942-7FCB7B8EE545}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
