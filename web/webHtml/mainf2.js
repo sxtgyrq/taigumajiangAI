@@ -2618,7 +2618,7 @@ function animate() {
                     //        objMain.marketGroup.children[i].visible = true;
                     //    }
                     //}
-                    douyinPanleShow.animate();
+                    // douyinPanleShow.animate();
 
                     if (objMain.animateParameter.loopCount % 5000 == 0) {
                         onWindowResize();
@@ -2969,8 +2969,8 @@ var set3DHtml = function () {
     //drawCarBtnsFrame();
     //objNotify.carNotifyShow();
     window.addEventListener('resize', onWindowResize, false);
-    douyinPanleShow.drawFlagThemeDetail('Ukraine');
-    douyinPanleShow.drawFlagThemeDetail('Russia');
+    //douyinPanleShow.drawFlagThemeDetail('Ukraine');
+    //douyinPanleShow.drawFlagThemeDetail('Russia');
     showDesk();
     objMain.camera.lookAt(0, 0.8, 0);
 }
